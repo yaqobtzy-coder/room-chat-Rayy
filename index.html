@@ -1,1 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FURAB V11 | NEURAL AI INDICATOR 🦾</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-database-compat.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <div id="auth-view">
+        <div class="auth-card animate__animated animate__fadeInDown">
+            <div class="auth-logo"><i class="fas fa-robot"></i></div>
+            <h2 style="font-family: 'Space Grotesk'; letter-spacing: 2px;">FURAB SYSTEM</h2>
+            <div class="auth-input-group">
+                <i class="fas fa-id-card"></i>
+                <input id="u-in" type="text" placeholder="Access Username" autocomplete="off">
+            </div>
+            <div class="auth-input-group">
+                <i class="fas fa-key"></i>
+                <input id="p-in" type="password" placeholder="Terminal Key">
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="auth('login')" class="btn-auth" style="background:var(--success)">SIGN IN</button>
+                <button onclick="auth('reg')" class="btn-auth" style="background:var(--p)">REGISTER</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="story-overlay">
+        <div class="story-header">
+            <div class="story-progress-container" id="story-bars"></div>
+            <div class="story-meta">
+                <div class="story-user">
+                    <img id="story-avatar" src="">
+                    <div>
+                        <b id="story-name" style="font-size:14px;">ROOM STATUS</b><br>
+                        <small style="opacity:0.7; font-size:10px;">Official Announcement</small>
+                    </div>
+                </div>
+                <div class="story-close" onclick="closeStory()"><i class="fas fa-times"></i></div>
+            </div>
+        </div>
+        <div class="story-content" id="story-media"></div>
+        <div class="story-caption" id="story-text"></div>
+    </div>
+
+    <div id="app-view">
+        <header>
+            <div class="header-profile" onclick="openStory()">
+                <img id="avatar-img" src="https://i.ibb.co.com/8L8C6d0/pfp.jpg">
+                <div class="header-info">
+                    <h4 id="room-name">FURAB ROOM</h4>
+                    <span id="room-status">NEURAL LINK ACTIVE</span>
+                </div>
+            </div>
+            <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:22px; cursor:pointer;"><i class="fas fa-power-off"></i></button>
+        </header>
+
+        <div class="tabs-nav">
+            <div class="tab-item active" id="tab-pub" onclick="switchView('public')">
+                <i class="fas fa-users"></i> PUBLIC
+            </div>
+            <div class="tab-item" id="tab-ai" onclick="switchView('ai')">
+                <i class="fas fa-brain"></i> FURAB AI
+            </div>
+        </div>
+
+        <div id="chat-screen"></div>
+
+        <div id="mute-notice">🚫 ROOM IS MUTED BY OWNER</div>
+
+        <div class="bottom-bar">
+            <div id="media-overlay">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px; font-weight:800;">
+                    <span><i class="fas fa-link"></i> ATTACH MEDIA URL</span>
+                    <i class="fas fa-times" onclick="toggleMedia()" style="cursor:pointer"></i>
+                </div>
+                <input type="text" id="m-url" class="media-input" placeholder="Paste link video/foto di sini...">
+            </div>
+
+            <div id="user-list-popup"></div>
+
+            <form id="form-chat">
+                <div id="reply-indicator">
+                    <div>
+                        <i class="fas fa-reply-all" style="color: var(--reply-border);"></i>
+                        <strong>Membalas pesan:</strong> <span id="reply-preview-text"></span>
+                    </div>
+                    <button type="button" id="cancel-reply" onclick="cancelReply()"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div id="input-area">
+                    <button type="button" class="btn-plus" id="btn-m" onclick="toggleMedia()"><i class="fas fa-plus"></i></button>
+                    <div class="input-box">
+                        <input id="chat-in" placeholder="Ketik @ untuk tag user, geser pesan ke kanan untuk reply..." required autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn-send" id="btn-send"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
