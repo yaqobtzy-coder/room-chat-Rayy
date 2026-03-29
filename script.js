@@ -1,7 +1,3 @@
-/* ========================================
-   CORE JAVASCRIPT ENGINE V11 + REPLY FEATURE
-   ======================================== */
-
 const firebaseConfig = { databaseURL: "https://rayy-all-web-default-rtdb.asia-southeast1.firebasedatabase.app" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -25,20 +21,104 @@ window.onload = () => {
     } 
 };
 
+// ========== NOTIFICATION PERMISSION ==========
 function requestNotificationPermission() {
     if ('Notification' in window) {
         Notification.requestPermission().then(perm => {
             notificationPermission = (perm === 'granted');
+            if(notificationPermission) {
+                console.log('✅ Notifikasi diizinkan');
+            } else {
+                console.log('⚠️ Notifikasi tidak diizinkan, tetap pakai in-app notif');
+            }
         });
+    } else {
+        console.log('❌ Browser tidak support notifikasi');
     }
 }
 
+// ========== IN-APP NOTIFICATION (TOAST) ==========
+function showInAppNotification(title, body) {
+    let toastContainer = document.getElementById('toast-container');
+    if(!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            width: 90%;
+            max-width: 420px;
+            pointer-events: none;
+        `;
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        background: linear-gradient(135deg, #8e44ad, #a55eea);
+        color: white;
+        padding: 14px 18px;
+        border-radius: 20px;
+        margin-bottom: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        border-left: 4px solid #f1c40f;
+        animation: slideInDown 0.3s ease;
+        pointer-events: auto;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+    `;
+    toast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="background: rgba(255,255,255,0.2); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-bell" style="font-size: 18px;"></i>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-size: 11px; opacity: 0.8; letter-spacing: 1px;">${title.toUpperCase()}</div>
+                <div style="font-size: 13px; font-weight: 500;">${body.substring(0, 70)}${body.length > 70 ? '...' : ''}</div>
+            </div>
+            <i class="fas fa-comment-dots" style="opacity: 0.7;"></i>
+        </div>
+    `;
+    
+    toast.onclick = () => {
+        document.getElementById('chat-in').focus();
+        toast.remove();
+    };
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        if(toast.parentNode) toast.remove();
+    }, 5000);
+}
+
+// ========== SEND NOTIFICATION (BROWSER + IN-APP) ==========
 function sendNotification(title, body) {
-    if (notificationPermission && document.hidden) {
-        new Notification(title, { body: body, icon: 'https://i.ibb.co.com/8L8C6d0/pfp.jpg' });
+    // Browser notification (hanya jika tab tidak aktif atau user mengizinkan)
+    if (notificationPermission && 'Notification' in window) {
+        try {
+            const notification = new Notification(title, { 
+                body: body, 
+                icon: 'https://i.ibb.co.com/8L8C6d0/pfp.jpg',
+                silent: false,
+                vibrate: [200, 100, 200]
+            });
+            setTimeout(() => notification.close(), 5000);
+        } catch(e) {
+            console.log('Browser notif gagal:', e);
+        }
     }
+    
+    // ALWAYS SHOW IN-APP NOTIFICATION (Toast)
+    showInAppNotification(title, body);
 }
 
+// ========== AUTHENTICATION ==========
 async function auth(type) {
     const u = document.getElementById('u-in').value.toLowerCase().trim();
     const p = document.getElementById('p-in').value;
@@ -79,6 +159,7 @@ async function auth(type) {
 
 function logout() { localStorage.removeItem('furab_user'); location.reload(); }
 
+// ========== LOAD ALL USERS FOR TAG ==========
 function loadAllUsers() {
     db.ref('users').on('value', snap => {
         allUsers = [];
@@ -95,6 +176,7 @@ function loadAllUsers() {
     });
 }
 
+// ========== USER LIST POPUP FOR TAG ==========
 function showUserList(filter = '') {
     const popup = document.getElementById('user-list-popup');
     const input = document.getElementById('chat-in');
@@ -143,15 +225,18 @@ function insertTag(tag) {
     input.focus();
 }
 
+// ========== CANCEL REPLY ==========
 function cancelReply() {
     replyTo = null;
     document.getElementById('reply-indicator').style.display = 'none';
     document.getElementById('reply-preview-text').innerText = '';
 }
 
+// ========== PROCESS COMMANDS (TAG, VERIFIED) ==========
 async function processMessageCommands(msg) {
     let processedMsg = msg;
     
+    // Fitur /v verified (hanya owner)
     if(msg.startsWith('/v ') && me === 'rayy') {
         const targetUser = msg.split(' ')[1];
         if(targetUser) {
@@ -165,23 +250,26 @@ async function processMessageCommands(msg) {
                     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     ts: Date.now()
                 });
+                sendNotification('✅ VERIFIED', `@${targetUser} telah diverifikasi oleh Owner`);
             }
             return null;
         }
     }
     
+    // Fitur @all
     if(msg.includes('@all')) {
         const mentions = allUsers.map(u => `@${u.name}`).join(' ');
         processedMsg = msg.replace('@all', mentions);
-        sendNotification('📢 Mention @all', `${me} menyebut semua orang: ${msg}`);
+        sendNotification('📢 MENTION ALL', `${me} menyebut semua orang: ${msg}`);
     }
     
+    // Fitur @user (tag per user)
     const mentionMatches = msg.match(/@(\w+)/g);
     if(mentionMatches) {
         mentionMatches.forEach(tag => {
             const username = tag.substring(1);
             if(username !== 'all' && allUsers.some(u => u.name === username)) {
-                sendNotification(`🔔 Kamu disebut oleh ${me}`, `Pesan: ${msg}`);
+                sendNotification(`🔔 KAMU DISEBUT`, `@${me} menyebutmu: ${msg.substring(0, 50)}...`);
             }
         });
     }
@@ -189,6 +277,7 @@ async function processMessageCommands(msg) {
     return processedMsg;
 }
 
+// ========== SWIPE REPLY GESTURE ==========
 function setupSwipeReply(element, messageId, user, text) {
     let touchStartX = 0;
     let touchEndX = 0;
@@ -223,9 +312,11 @@ function setupSwipeReply(element, messageId, user, text) {
     });
 }
 
+// ========== BOOT APPLICATION ==========
 function boot() {
     loadAllUsers();
     
+    // Settings listener (mute, room name, avatar)
     db.ref('settings').on('value', s => {
         const d = s.val() || {};
         document.getElementById('room-name').innerText = d.roomName || 'FURAB ROOM';
@@ -248,6 +339,7 @@ function boot() {
         }
     });
 
+    // Status room listener
     db.ref('status_room').on('value', snap => {
         activeStatus = [];
         const data = snap.val();
@@ -258,6 +350,7 @@ function boot() {
 
     syncMessages();
     
+    // Input listener untuk tag user
     const chatInput = document.getElementById('chat-in');
     chatInput.addEventListener('input', (e) => {
         const val = e.target.value;
@@ -275,6 +368,7 @@ function boot() {
     });
 }
 
+// ========== STORY FUNCTIONS ==========
 function openStory() {
     if(activeStatus.length === 0) return alert("Belum ada status terbaru.");
     statusIdx = 0;
@@ -330,6 +424,7 @@ function closeStory() {
     clearTimeout(statusTimer);
 }
 
+// ========== SWITCH VIEW (PUBLIC / AI) ==========
 function switchView(v) {
     if(view === v) return;
     view = v;
@@ -339,6 +434,7 @@ function switchView(v) {
     syncMessages();
 }
 
+// ========== SYNC MESSAGES FROM FIREBASE ==========
 function syncMessages() {
     const path = view === 'public' ? 'messages' : `ai_chats/${me}`;
     db.ref(path).limitToLast(50).on('value', snap => {
@@ -352,6 +448,7 @@ function syncMessages() {
     });
 }
 
+// ========== RENDER BUBBLE CHAT ==========
 async function renderBubble(data, messageId, isThinking = false) {
     const screen = document.getElementById('chat-screen');
     const isMe = data.user === me;
@@ -426,12 +523,14 @@ async function renderBubble(data, messageId, isThinking = false) {
     screen.scrollTop = screen.scrollHeight;
 }
 
+// ========== TOGGLE MEDIA OVERLAY ==========
 function toggleMedia() {
     mediaOpen = !mediaOpen;
     document.getElementById('media-overlay').style.display = mediaOpen ? 'block' : 'none';
     document.getElementById('btn-m').classList.toggle('active', mediaOpen);
 }
 
+// ========== SEND MESSAGE ==========
 document.getElementById('form-chat').onsubmit = async (e) => {
     e.preventDefault();
     const cin = document.getElementById('chat-in');
@@ -485,6 +584,27 @@ document.getElementById('form-chat').onsubmit = async (e) => {
         } catch(err) {
             const indicator = document.getElementById('ai-typing-indicator');
             if(indicator) indicator.remove();
+            console.error('AI Error:', err);
         }
     }
 };
+
+// ========== ADD CSS ANIMATION FOR TOAST ==========
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px) translateX(-50%);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) translateX(-50%);
+        }
+    }
+    #toast-container {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+`;
+document.head.appendChild(style);
