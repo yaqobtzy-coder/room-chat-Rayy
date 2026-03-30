@@ -53,6 +53,9 @@
         <div class="story-caption" id="story-text"></div>
     </div>
 
+    <!-- TOAST CONTAINER untuk in-app notification -->
+    <div id="toast-container"></div>
+
     <div id="app-view">
         <header>
             <div class="header-profile" onclick="openStory()">
@@ -62,15 +65,24 @@
                     <span id="room-status">NEURAL LINK ACTIVE</span>
                 </div>
             </div>
-            <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:22px; cursor:pointer;"><i class="fas fa-power-off"></i></button>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <!-- NOTIFICATION BELL -->
+                <div class="notif-bell" id="notif-bell" onclick="clearNotifBadge()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notif-count" id="notif-count">0</span>
+                </div>
+                <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:22px; cursor:pointer;"><i class="fas fa-power-off"></i></button>
+            </div>
         </header>
 
         <div class="tabs-nav">
             <div class="tab-item active" id="tab-pub" onclick="switchView('public')">
                 <i class="fas fa-users"></i> PUBLIC
+                <span class="tab-badge" id="badge-pub"></span>
             </div>
             <div class="tab-item" id="tab-ai" onclick="switchView('ai')">
                 <i class="fas fa-brain"></i> FURAB AI
+                <span class="tab-badge" id="badge-ai"></span>
             </div>
         </div>
 
@@ -112,3 +124,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
