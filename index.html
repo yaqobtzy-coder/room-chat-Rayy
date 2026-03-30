@@ -2,129 +2,71 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FURAB V12 | NEURAL AI INDICATOR 🦾</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    
-    <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-database-compat.js"></script>
-    
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance | Room chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root { --p: #a855f7; --s: #2ecc71; --bg: #020617; --c: rgba(16, 25, 46, 0.7); --w: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(168, 85, 247, 0); } 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); } }
+        @keyframes pulse-g { 0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(46, 204, 113, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { background: var(--bg); color: var(--w); overflow-x: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .bg-glow { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; background: var(--p); filter: blur(150px); opacity: 0.15; z-index: -1; }
+        .card { background: var(--c); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.08); border-radius: 30px; padding: 40px 20px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); animation: float 5s ease-in-out infinite; }
+        .logo-box { position: relative; width: 70px; height: 70px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .m-icon { width: 100%; height: 100%; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--p); border-radius: 50%; animation: spin 2s linear infinite; }
+        .m-inner { position: absolute; font-size: 30px; color: var(--p); font-weight: 800; }
+        h1 { font-size: 26px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(to right, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; }
+        p.sub { opacity: 0.6; font-size: 13px; margin-bottom: 25px; line-height: 1.6; padding: 0 10px; }
+        .status-box { background: rgba(0,0,0,0.3); border-radius: 20px; padding: 20px; margin-bottom: 25px; border-left: 4px solid var(--p); text-align: left; }
+        .status-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-family: 'JetBrains Mono'; font-size: 11px; align-items: center; }
+        .tag { padding: 4px 10px; border-radius: 6px; font-size: 9px; font-weight: bold; letter-spacing: 1px; }
+        .tag.red { background: #ef4444; color: white; }
+        .tag.orange { background: #f59e0b; color: white; }
+        .tag.blue { background: #3b82f6; color: white; }
+        .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .btn { display: flex; align-items: center; justify-content: center; padding: 14px; border-radius: 14px; text-decoration: none; color: white; font-size: 11px; font-weight: 700; transition: 0.3s; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); }
+        .btn:hover { transform: translateY(-3px) scale(1.02); background: var(--p); border-color: var(--p); box-shadow: 0 10px 20px -10px var(--p); }
+        .btn.glow { background: var(--p); border: none; grid-column: span 1; animation: pulse 2s infinite; }
+        .btn.full { grid-column: span 2; }
+        .btn.main { background: var(--s); border: none; font-weight: 800; box-shadow: 0 5px 15px -5px var(--s); color: #000; }
+        .btn.grup { background: transparent; border: 2px solid var(--s); color: var(--s); font-weight: 800; animation: pulse-g 2.5s infinite; }
+        .btn.grup:hover { background: var(--s); color: #000; border-color: var(--s); box-shadow: 0 10px 20px -10px var(--s); }
+        .section-title { font-size: 10px; opacity: 0.4; margin: 25px 0 12px; text-align: left; font-weight: 800; letter-spacing: 2px; }
+        .footer { margin-top: 35px; font-family: 'JetBrains Mono'; font-size: 9px; opacity: 0.3; letter-spacing: 3px; text-transform: uppercase; }
+    </style>
 </head>
 <body>
-
-    <div id="auth-view">
-        <div class="auth-card animate__animated animate__fadeInDown">
-            <div class="auth-logo"><i class="fas fa-robot"></i></div>
-            <h2 style="font-family: 'Space Grotesk'; letter-spacing: 2px;">FURAB SYSTEM</h2>
-            <div class="auth-input-group">
-                <i class="fas fa-id-card"></i>
-                <input id="u-in" type="text" placeholder="Access Username" autocomplete="off">
-            </div>
-            <div class="auth-input-group">
-                <i class="fas fa-key"></i>
-                <input id="p-in" type="password" placeholder="Terminal Key">
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button onclick="auth('login')" class="btn-auth" style="background:var(--success)">SIGN IN</button>
-                <button onclick="auth('reg')" class="btn-auth" style="background:var(--p)">REGISTER</button>
-            </div>
+    <div class="bg-glow"></div>
+    <div class="card">
+        <div class="logo-box">
+            <div class="m-icon"></div>
+            <div class="m-inner">!</div>
         </div>
+        <h1>UNDER MAINTENANCE</h1>
+        <p class="sub">Kami sedang melakukan update sistem untuk memberikan pengalaman terbaik buat kamu.</p>
+        <div class="status-box">
+            <div class="status-item"><span>DASHBOARD</span> <span class="tag blue">ONLINE</span></div>
+            <div class="status-item"><span>ROOM v11</span> <span class="tag red">OPEN-NO UPDATE</span></div>
+            <div class="status-item"><span>ROOM v12</span> <span class="tag orange">MAINTENANCE</span></div>
+        </div>
+        <div class="section-title">ACCESS ZONE</div>
+        <div class="btn-grid">
+            <a href="https://furab-dashboard.vercel.app" class="btn full main">DASHBOARD UTAMA</a>
+            <a href="https://furab-room-chat.vercel.app/" class="btn">ROOM CHAT v11</a>
+            <a href="https://roomchatrayy.vercel.app/" class="btn glow">ROOM CHAT v12</a>
+        </div>
+        <div class="section-title">SOCIALS ZONE</div>
+        <div class="btn-grid">
+            <a href="https://chat.whatsapp.com/IhoKU5OVmHt3pTPpTHDvSC" class="btn full grup">GABUNG GRUP WHATSAPP</a>
+            <a href="https://wa.me/6285189712417" class="btn">WHATSAPP</a>
+            <a href="https://T.me/DeltaxReal" class="btn">TELEGRAM</a>
+            <a href="https://www.tiktok.com/@furab_fans1" class="btn">TIKTOK (FANS1)</a>
+            <a href="https://www.tiktok.com/@bengeut_hurung" class="btn">TIKTOK (Rayy)</a>
+        </div>
+        <div class="footer">DEVELOPED BY RAYY STORE • X-WARHEAD</div>
     </div>
-
-    <div id="story-overlay">
-        <div class="story-header">
-            <div class="story-progress-container" id="story-bars"></div>
-            <div class="story-meta">
-                <div class="story-user">
-                    <img id="story-avatar" src="">
-                    <div>
-                        <b id="story-name" style="font-size:14px;">ROOM STATUS</b><br>
-                        <small style="opacity:0.7; font-size:10px;">Official Announcement</small>
-                    </div>
-                </div>
-                <div class="story-close" onclick="closeStory()"><i class="fas fa-times"></i></div>
-            </div>
-        </div>
-        <div class="story-content" id="story-media"></div>
-        <div class="story-caption" id="story-text"></div>
-    </div>
-
-    <div id="app-view">
-        <header>
-            <div class="header-profile" onclick="openStory()">
-                <img id="avatar-img" src="https://i.ibb.co.com/8L8C6d0/pfp.jpg">
-                <div class="header-info">
-                    <h4 id="room-name">FURAB ROOM</h4>
-                    <span id="room-status">NEURAL LINK ACTIVE</span>
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="toggleMemberList()" style="background:none; border:none; color:var(--p-light); font-size:20px; cursor:pointer;" title="Daftar Anggota"><i class="fas fa-users"></i></button>
-                <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:20px; cursor:pointer;"><i class="fas fa-power-off"></i></button>
-            </div>
-        </header>
-
-        <!-- Member List Modal -->
-        <div id="member-modal" class="member-modal">
-            <div class="member-modal-content">
-                <div class="member-modal-header">
-                    <h3><i class="fas fa-users"></i> Daftar Anggota Room</h3>
-                    <span class="member-modal-close" onclick="closeMemberList()">&times;</span>
-                </div>
-                <div class="member-modal-body" id="member-list-container">
-                    <div style="text-align: center; padding: 20px;">Loading...</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tabs-nav">
-            <div class="tab-item active" id="tab-pub" onclick="switchView('public')">
-                <i class="fas fa-users"></i> PUBLIC
-            </div>
-            <div class="tab-item" id="tab-ai" onclick="switchView('ai')">
-                <i class="fas fa-brain"></i> FURAB AI
-            </div>
-        </div>
-
-        <div id="chat-screen"></div>
-
-        <div id="mute-notice">🚫 ROOM IS MUTED BY OWNER</div>
-
-        <div class="bottom-bar">
-            <div id="media-overlay">
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px; font-weight:800;">
-                    <span><i class="fas fa-link"></i> ATTACH MEDIA URL</span>
-                    <i class="fas fa-times" onclick="toggleMedia()" style="cursor:pointer"></i>
-                </div>
-                <input type="text" id="m-url" class="media-input" placeholder="Paste link video/foto di sini...">
-            </div>
-
-            <div id="user-list-popup"></div>
-
-            <form id="form-chat">
-                <div id="reply-indicator">
-                    <div>
-                        <i class="fas fa-reply-all" style="color: var(--reply-border);"></i>
-                        <strong>Membalas pesan:</strong> <span id="reply-preview-text"></span>
-                    </div>
-                    <button type="button" id="cancel-reply" onclick="cancelReply()"><i class="fas fa-times"></i></button>
-                </div>
-                
-                <div id="input-area">
-                    <button type="button" class="btn-plus" id="btn-m" onclick="toggleMedia()"><i class="fas fa-plus"></i></button>
-                    <div class="input-box">
-                        <input id="chat-in" placeholder="Ketik @ untuk tag user, geser pesan ke kanan untuk reply..." required autocomplete="off">
-                    </div>
-                    <button type="submit" class="btn-send" id="btn-send"><i class="fas fa-paper-plane"></i></button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
