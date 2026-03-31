@@ -656,8 +656,26 @@ async function renderRoomMessage(data, messageId) {
 // REPLY FUNCTION
 function replyToMessage(messageId, user, text) {
     replyTo = { messageId: messageId, user: user, text: text };
-    const replyIndicator = document.getElementById('reply-indicator');
-    const replyText = document.getElementById('reply-preview-text');
+    let replyIndicator = document.getElementById('reply-indicator');
+    let replyText = document.getElementById('reply-preview-text');
+    
+    // Create reply indicator if not exists
+    if (!replyIndicator) {
+        const roomInputContainer = document.querySelector('.room-input-container');
+        if (roomInputContainer) {
+            replyIndicator = document.createElement('div');
+            replyIndicator.id = 'reply-indicator';
+            replyIndicator.className = 'reply-indicator';
+            replyIndicator.style.display = 'flex';
+            replyIndicator.innerHTML = `
+                <div><i class="fas fa-reply-all"></i> <strong>Membalas:</strong> <span id="reply-preview-text"></span></div>
+                <button type="button" id="cancel-reply-btn" onclick="cancelReply()"><i class="fas fa-times"></i></button>
+            `;
+            roomInputContainer.prepend(replyIndicator);
+            replyText = document.getElementById('reply-preview-text');
+        }
+    }
+    
     if (replyIndicator && replyText) {
         replyIndicator.style.display = 'flex';
         replyText.innerHTML = `<strong>@${user}</strong>: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`;
@@ -682,6 +700,8 @@ function showUserList(filter) {
     }
     
     const input = document.getElementById('room-chat-in');
+    if (!input) return;
+    
     if (!input.value.includes('@') && !filter) {
         popup.style.display = 'none';
         return;
@@ -713,8 +733,10 @@ function showUserList(filter) {
 
 function insertTag(tag) {
     const input = document.getElementById('room-chat-in');
-    input.value += tag + ' ';
-    input.focus();
+    if (input) {
+        input.value += tag + ' ';
+        input.focus();
+    }
     const popup = document.getElementById('user-list-popup');
     if (popup) popup.style.display = 'none';
 }
@@ -767,9 +789,12 @@ function showInAppNotification(title, body) {
     setTimeout(() => toast.remove(), 4000);
 }
 
+// ========== SEND ROOM MESSAGE (FIX) ==========
 async function sendRoomMessage(e) {
     e.preventDefault();
     const input = document.getElementById('room-chat-in');
+    if (!input) return;
+    
     let msg = input.value.trim();
     if (!msg) return;
     
@@ -813,27 +838,36 @@ async function sendRoomMessage(e) {
         return;
     }
     
+    // Send message to room
     await db.ref('messages_room').push(messageObj);
     
+    // Auto scroll to bottom
     const container = document.getElementById('room-chat-screen');
-    setTimeout(() => {
-        container.scrollTop = container.scrollHeight;
-    }, 100);
+    if (container) {
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 100);
+    }
 }
 
 // ========== AI CHAT ==========
 function toggleAIChat() {
     const modal = document.getElementById('ai-modal');
-    modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    if (modal) {
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    }
 }
 
 async function sendAIMessage(e) {
     e.preventDefault();
     const input = document.getElementById('ai-input');
+    if (!input) return;
     const msg = input.value.trim();
     if (!msg) return;
     
     const container = document.getElementById('ai-messages');
+    if (!container) return;
+    
     container.innerHTML += `<div class="ai-message user"><div class="ai-bubble">${escapeHtml(msg)}</div></div>`;
     input.value = '';
     container.innerHTML += `<div class="ai-message bot"><div class="ai-bubble"><i class="fas fa-spinner fa-spin"></i> Thinking...</div></div>`;
@@ -874,18 +908,6 @@ function boot() {
     loadPinnedMessage();
     loadStory();
     
-    // Create reply indicator
-    const replyIndicator = document.createElement('div');
-    replyIndicator.id = 'reply-indicator';
-    replyIndicator.className = 'reply-indicator';
-    replyIndicator.style.display = 'none';
-    replyIndicator.innerHTML = `
-        <div><i class="fas fa-reply-all"></i> <strong>Membalas:</strong> <span id="reply-preview-text"></span></div>
-        <button type="button" id="cancel-reply-btn" onclick="cancelReply()"><i class="fas fa-times"></i></button>
-    `;
-    const roomInputContainer = document.querySelector('.room-input-container');
-    if (roomInputContainer) roomInputContainer.prepend(replyIndicator);
-    
     // Add event listener for @ mention
     const roomInput = document.getElementById('room-chat-in');
     if (roomInput) {
@@ -900,6 +922,25 @@ function boot() {
             }
         });
     }
+    
+    // Attach form submit handler
+    const roomForm = document.getElementById('room-chat-form');
+    if (roomForm) {
+        roomForm.removeEventListener('submit', sendRoomMessage);
+        roomForm.addEventListener('submit', sendRoomMessage);
+    }
+    
+    const privateForm = document.getElementById('private-chat-form');
+    if (privateForm) {
+        privateForm.removeEventListener('submit', sendPrivateMessage);
+        privateForm.addEventListener('submit', sendPrivateMessage);
+    }
+    
+    const aiForm = document.getElementById('ai-chat-form');
+    if (aiForm) {
+        aiForm.removeEventListener('submit', sendAIMessage);
+        aiForm.addEventListener('submit', sendAIMessage);
+    }
 }
 
 // ========== EVENT LISTENERS ==========
@@ -908,7 +949,9 @@ document.getElementById('register-btn').onclick = handleRegister;
 document.getElementById('logout-btn').onclick = logout;
 document.getElementById('menu-btn').onclick = toggleSidebar;
 document.getElementById('close-sidebar').onclick = toggleSidebar;
-document.querySelector('.sidebar-overlay').onclick = toggleSidebar;
+if (document.querySelector('.sidebar-overlay')) {
+    document.querySelector('.sidebar-overlay').onclick = toggleSidebar;
+}
 document.getElementById('info-update-btn').onclick = openInfoModal;
 document.getElementById('dev-contact-btn').onclick = openDevModal;
 document.getElementById('unread-messages-item').onclick = openUnreadModal;
@@ -923,11 +966,8 @@ document.getElementById('nav-private').onclick = () => switchTab('private');
 document.getElementById('nav-room').onclick = () => switchTab('room');
 document.getElementById('back-to-list').onclick = backToUserList;
 document.getElementById('search-user').oninput = filterUserList;
-document.getElementById('private-chat-form').onsubmit = sendPrivateMessage;
-document.getElementById('room-chat-form').onsubmit = sendRoomMessage;
 document.getElementById('ai-button').onclick = toggleAIChat;
 document.getElementById('close-ai').onclick = toggleAIChat;
-document.getElementById('ai-chat-form').onsubmit = sendAIMessage;
 document.getElementById('close-welcome').onclick = () => document.getElementById('welcome-modal').style.display = 'none';
 document.getElementById('email-contact').onclick = (e) => { e.preventDefault(); alert('📧 rayy@furab.com'); };
 document.getElementById('instagram-contact').onclick = (e) => { e.preventDefault(); alert('📱 @rayy_official'); };
