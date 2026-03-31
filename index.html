@@ -1,4 +1,4 @@
-f<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -55,6 +55,7 @@ f<!DOCTYPE html>
 
     <!-- MAIN APP -->
     <div id="app-view">
+        <!-- HEADER -->
         <header>
             <div class="header-left" id="open-story-btn">
                 <img id="avatar-img" src="https://i.ibb.co.com/8L8C6d0/pfp.jpg">
@@ -65,10 +66,7 @@ f<!DOCTYPE html>
             </div>
             <div class="header-right">
                 <button id="member-list-btn"><i class="fas fa-users"></i></button>
-                <button id="menu-btn">
-                    <i class="fas fa-ellipsis-v"></i>
-                    <span id="header-unread-badge" class="unread-badge-header" style="display: none;">0</span>
-                </button>
+                <button id="menu-btn"><i class="fas fa-ellipsis-v"></i></button>
                 <button id="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </header>
@@ -81,6 +79,9 @@ f<!DOCTYPE html>
             </div>
             <button class="unpin-icon" id="unpin-btn" onclick="event.stopPropagation(); unpinMessage()"><i class="fas fa-times"></i></button>
         </div>
+
+        <!-- MUTE NOTICE - DI ATAS KOLOM CHAT -->
+        <div id="mute-notice">🔇 ROOM IS MUTED BY OWNER - Only admin can chat</div>
 
         <!-- MEMBER LIST MODAL -->
         <div id="member-modal" class="member-modal">
@@ -233,17 +234,16 @@ f<!DOCTYPE html>
 
         <!-- ROOM CHAT TAB -->
         <div id="room-tab" class="main-tab">
+            <!-- CHAT MESSAGES -->
             <div id="room-chat-screen" class="room-chat-screen"></div>
+            <!-- INPUT CONTAINER - HARUS DI DALAM room-tab -->
             <div class="room-input-container">
                 <form id="room-chat-form">
-                    <input type="text" id="room-chat-in" placeholder="Ketik @ untuk tag user, geser ke kanan untuk reply...">
+                    <input type="text" id="room-chat-in" placeholder="Ketik @ untuk tag user...">
                     <button type="submit"><i class="fas fa-paper-plane"></i></button>
                 </form>
             </div>
         </div>
-
-        <!-- MUTE NOTICE -->
-        <div id="mute-notice">🚫 ROOM IS MUTED BY OWNER</div>
 
         <!-- AI BUTTON -->
         <button id="ai-button" class="ai-button">
