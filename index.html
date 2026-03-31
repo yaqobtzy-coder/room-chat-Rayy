@@ -80,10 +80,10 @@
             <button class="unpin-icon" id="unpin-btn" onclick="event.stopPropagation(); unpinMessage()"><i class="fas fa-times"></i></button>
         </div>
 
-        <!-- MUTE NOTICE - DI ATAS KOLOM CHAT -->
+        <!-- MUTE NOTICE -->
         <div id="mute-notice">🔇 ROOM IS MUTED BY OWNER - Only admin can chat</div>
 
-        <!-- MEMBER LIST MODAL -->
+        <!-- MEMBER MODAL -->
         <div id="member-modal" class="member-modal">
             <div class="member-modal-content">
                 <div class="member-modal-header">
@@ -126,7 +126,7 @@
             </div>
         </div>
 
-        <!-- INFO UPDATE MODAL -->
+        <!-- INFO MODAL -->
         <div id="info-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -139,7 +139,7 @@
             </div>
         </div>
 
-        <!-- DEV CONTACT MODAL -->
+        <!-- DEV MODAL -->
         <div id="dev-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -147,9 +147,7 @@
                     <button class="close-dev-modal"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="modal-body dev-body">
-                    <div class="dev-avatar">
-                        <i class="fas fa-user-astronaut"></i>
-                    </div>
+                    <div class="dev-avatar"><i class="fas fa-user-astronaut"></i></div>
                     <h2>Rayy Store</h2>
                     <div class="badge-group">
                         <span class="badge-owner">👑 OWNER</span>
@@ -167,7 +165,7 @@
             </div>
         </div>
 
-        <!-- UNREAD MESSAGES MODAL -->
+        <!-- UNREAD MODAL -->
         <div id="unread-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -180,7 +178,7 @@
             </div>
         </div>
 
-        <!-- PINNED MESSAGES MODAL -->
+        <!-- PINNED MODAL -->
         <div id="pinned-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -234,9 +232,7 @@
 
         <!-- ROOM CHAT TAB -->
         <div id="room-tab" class="main-tab">
-            <!-- CHAT MESSAGES -->
             <div id="room-chat-screen" class="room-chat-screen"></div>
-            <!-- INPUT CONTAINER - HARUS DI DALAM room-tab -->
             <div class="room-input-container">
                 <form id="room-chat-form">
                     <input type="text" id="room-chat-in" placeholder="Ketik @ untuk tag user...">
@@ -262,9 +258,7 @@
                     <button id="close-ai"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="ai-messages" id="ai-messages">
-                    <div class="ai-message bot">
-                        <div class="ai-bubble">Halo! Saya AI Assistant. Ada yang bisa saya bantu?</div>
-                    </div>
+                    <div class="ai-message bot"><div class="ai-bubble">Halo! Saya AI Assistant. Ada yang bisa saya bantu?</div></div>
                 </div>
                 <div class="ai-input">
                     <form id="ai-chat-form">
@@ -276,12 +270,10 @@
         </div>
     </div>
 
-    <!-- WELCOME THUMBNAIL MODAL -->
+    <!-- WELCOME MODAL -->
     <div id="welcome-modal" class="welcome-modal">
         <div class="welcome-content">
-            <div class="welcome-thumb">
-                <img src="https://files.catbox.moe/hohg36.jpg">
-            </div>
+            <div class="welcome-thumb"><img src="https://files.catbox.moe/hohg36.jpg"></div>
             <h3 id="welcome-username"></h3>
             <p id="welcome-time"></p>
             <button id="close-welcome">Mulai Chat</button>

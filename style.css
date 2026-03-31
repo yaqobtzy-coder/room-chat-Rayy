@@ -34,7 +34,7 @@ body {
     position: fixed;
 }
 
-/* AUTH */
+/* ========== AUTH ========== */
 #auth-view {
     position: fixed;
     inset: 0;
@@ -85,7 +85,7 @@ body {
 .btn-login { background: var(--success); }
 .btn-register { background: var(--p); }
 
-/* APP VIEW - FIX LAYOUT TIDAK TENGGELAM */
+/* ========== APP VIEW ========== */
 #app-view {
     width: 100%;
     max-width: 500px;
@@ -97,7 +97,7 @@ body {
     overflow: hidden;
 }
 
-/* HEADER - FIXED TOP */
+/* ========== HEADER ========== */
 header {
     background: var(--bg-header);
     padding: 12px 16px;
@@ -149,7 +149,7 @@ header {
     display: none;
 }
 
-/* PINNED BANNER */
+/* ========== PINNED BANNER ========== */
 .pinned-banner {
     background: var(--pin-bg);
     border-left: 3px solid var(--warning);
@@ -181,9 +181,9 @@ header {
 }
 .unpin-icon:hover { color: var(--danger); }
 
-/* MUTE NOTICE - DI ATAS KOLOM CHAT */
+/* ========== MUTE NOTICE ========== */
 #mute-notice {
-    background: rgba(239,68,68,0.2);
+    background: rgba(239,68,68,0.15);
     color: var(--danger);
     padding: 10px 16px;
     font-size: 12px;
@@ -194,7 +194,7 @@ header {
     flex-shrink: 0;
 }
 
-/* MEMBER MODAL */
+/* ========== MEMBER MODAL ========== */
 .member-modal {
     display: none;
     position: fixed;
@@ -257,7 +257,7 @@ header {
 .member-name { font-weight: 600; color: white; }
 .member-badge { font-size: 10px; color: var(--gray); }
 
-/* SIDEBAR */
+/* ========== SIDEBAR ========== */
 .sidebar-menu {
     position: fixed;
     top: 0;
@@ -336,8 +336,7 @@ header {
     font-size: 10px;
     margin-left: auto;
 }
-
-/* MODAL */
+/* ========== MODAL ========== */
 .modal {
     display: none;
     position: fixed;
@@ -379,7 +378,8 @@ header {
     overflow-y: auto;
     max-height: 60vh;
 }
-/* DEV MODAL */
+
+/* ========== DEV MODAL ========== */
 .dev-body { text-align: center; }
 .dev-avatar {
     width: 80px;
@@ -423,7 +423,7 @@ header {
 }
 .dev-contact a:hover { color: var(--p); }
 
-/* UPDATE CARD */
+/* ========== UPDATE CARD ========== */
 .update-card {
     background: rgba(0,0,0,0.3);
     border-radius: 16px;
@@ -434,7 +434,7 @@ header {
 .update-title { font-size: 14px; font-weight: 700; color: white; margin-bottom: 8px; }
 .update-desc { font-size: 12px; color: var(--gray); line-height: 1.5; }
 
-/* BOTTOM NAVIGATION */
+/* ========== BOTTOM NAVIGATION ========== */
 .bottom-nav {
     display: flex;
     background: var(--bg-header);
@@ -457,7 +457,7 @@ header {
 .nav-item span { font-size: 11px; font-weight: 500; }
 .nav-item.active { color: var(--p); border-bottom: 2px solid var(--p); }
 
-/* MAIN TABS */
+/* ========== MAIN TABS ========== */
 .main-tab {
     display: none;
     flex: 1;
@@ -467,7 +467,7 @@ header {
 }
 .main-tab.active { display: flex; }
 
-/* USER LIST */
+/* ========== USER LIST ========== */
 .chat-list-header {
     padding: 12px 16px;
     background: var(--bg-header);
@@ -551,7 +551,7 @@ header {
     transform: translateY(-50%);
 }
 
-/* PRIVATE CHAT */
+/* ========== PRIVATE CHAT ========== */
 .private-chat-screen {
     flex: 1;
     display: none;
@@ -615,7 +615,7 @@ header {
     cursor: pointer;
 }
 
-/* ROOM CHAT - INPUT TIDAK TENGGELAM */
+/* ========== ROOM CHAT ========== */
 .room-chat-screen {
     flex: 1;
     overflow-y: auto;
@@ -631,11 +631,11 @@ header {
     background: var(--bg-header);
     border-top: 1px solid var(--border);
     flex-shrink: 0;
-    margin-top: auto;
 }
 .room-input-container form {
     display: flex;
     gap: 12px;
+    align-items: center;
 }
 .room-input-container input {
     flex: 1;
@@ -647,6 +647,9 @@ header {
     outline: none;
     font-size: 14px;
 }
+.room-input-container input:focus {
+    border-color: var(--p);
+}
 .room-input-container button {
     width: 44px;
     height: 44px;
@@ -655,8 +658,13 @@ header {
     border: none;
     color: white;
     cursor: pointer;
+    flex-shrink: 0;
+    transition: 0.2s;
 }
-
+.room-input-container button:active {
+    transform: scale(0.95);
+}
+/* ========== MESSAGE BUBBLE ========== */
 .message {
     display: flex;
     flex-direction: column;
@@ -726,7 +734,8 @@ header {
     height: 24px;
     border-radius: 8px;
 }
-/* REPLY & PIN ACTIONS */
+
+/* ========== REPLY & PIN ACTIONS ========== */
 .message-actions {
     position: absolute;
     top: 0;
@@ -759,7 +768,7 @@ header {
     margin-left: 8px;
 }
 
-/* AI BUTTON */
+/* ========== AI BUTTON ========== */
 .ai-button {
     position: fixed;
     bottom: 90px;
@@ -783,7 +792,7 @@ header {
 .ai-button span { font-size: 10px; margin-top: 2px; }
 .ai-button:hover { transform: scale(1.05); }
 
-/* AI MODAL */
+/* ========== AI MODAL ========== */
 .ai-modal {
     display: none;
     position: fixed;
@@ -882,7 +891,7 @@ header {
     cursor: pointer;
 }
 
-/* STORY OVERLAY */
+/* ========== STORY OVERLAY ========== */
 #story-overlay {
     position: fixed;
     inset: 0;
@@ -922,7 +931,7 @@ header {
 }
 .story-close { font-size: 24px; cursor: pointer; padding: 5px; }
 
-/* WELCOME MODAL */
+/* ========== WELCOME MODAL ========== */
 .welcome-modal {
     display: none;
     position: fixed;
@@ -962,6 +971,7 @@ header {
 
 .loading { text-align: center; padding: 40px; color: var(--gray); }
 
+/* ========== ANIMATIONS ========== */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -971,13 +981,16 @@ header {
     to { opacity: 1; transform: scale(1); }
 }
 
+/* ========== RESPONSIVE ========== */
 @media (max-width: 550px) {
     .ai-modal { max-width: 100%; height: 70vh; bottom: 0; right: 0; border-radius: 24px 24px 0 0; }
     .ai-button { bottom: 80px; right: 16px; width: 48px; height: 48px; }
     .message-actions { right: -30px; }
+    .room-input-container input { font-size: 13px; padding: 10px 14px; }
+    .room-input-container button { width: 40px; height: 40px; }
 }
 
-/* WEB SUPPORT - DESKTOP */
+/* ========== WEB SUPPORT ========== */
 @media (min-width: 768px) {
     #app-view {
         border-radius: 24px;
