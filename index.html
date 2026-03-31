@@ -55,7 +55,6 @@
 
     <!-- MAIN APP -->
     <div id="app-view">
-        <!-- HEADER -->
         <header>
             <div class="header-left" id="open-story-btn">
                 <img id="avatar-img" src="https://i.ibb.co.com/8L8C6d0/pfp.jpg">
@@ -71,7 +70,6 @@
             </div>
         </header>
 
-        <!-- PINNED MESSAGE BANNER -->
         <div id="pinned-banner" class="pinned-banner" style="display: none;">
             <div class="pinned-content" id="pinned-content" onclick="openPinnedModal()">
                 <i class="fas fa-thumbtack"></i>
@@ -80,10 +78,8 @@
             <button class="unpin-icon" id="unpin-btn" onclick="event.stopPropagation(); unpinMessage()"><i class="fas fa-times"></i></button>
         </div>
 
-        <!-- MUTE NOTICE -->
         <div id="mute-notice">🔇 ROOM IS MUTED BY OWNER - Only admin can chat</div>
 
-        <!-- MEMBER MODAL -->
         <div id="member-modal" class="member-modal">
             <div class="member-modal-content">
                 <div class="member-modal-header">
@@ -96,7 +92,6 @@
             </div>
         </div>
 
-        <!-- SIDEBAR MENU -->
         <div id="sidebar-menu" class="sidebar-menu">
             <div class="sidebar-overlay"></div>
             <div class="sidebar-content">
@@ -126,20 +121,16 @@
             </div>
         </div>
 
-        <!-- INFO MODAL -->
         <div id="info-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3><i class="fas fa-bell"></i> Info Update</h3>
                     <button class="close-info-modal"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="modal-body" id="update-list-modal">
-                    <div class="loading">Loading updates...</div>
-                </div>
+                <div class="modal-body" id="update-list-modal"><div class="loading">Loading...</div></div>
             </div>
         </div>
 
-        <!-- DEV MODAL -->
         <div id="dev-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -155,7 +146,7 @@
                         <span class="badge-js">⚡ JS</span>
                         <span class="badge-verified">✅ VERIFIED</span>
                     </div>
-                    <p class="dev-bio">Fullstack Developer | FURAB Creator | Neural AI Architect</p>
+                    <p class="dev-bio">Fullstack Developer | FURAB Creator</p>
                     <div class="dev-contact">
                         <a href="#" id="email-contact"><i class="fas fa-envelope"></i> Email</a>
                         <a href="#" id="instagram-contact"><i class="fab fa-instagram"></i> Instagram</a>
@@ -165,45 +156,31 @@
             </div>
         </div>
 
-        <!-- UNREAD MODAL -->
         <div id="unread-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3><i class="fas fa-envelope"></i> Pesan Belum Dibaca</h3>
                     <button class="close-unread-modal"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="modal-body" id="unread-list-container">
-                    <div class="loading">Loading...</div>
-                </div>
+                <div class="modal-body" id="unread-list-container"><div class="loading">Loading...</div></div>
             </div>
         </div>
 
-        <!-- PINNED MODAL -->
         <div id="pinned-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3><i class="fas fa-thumbtack"></i> Pesan Terpin</h3>
                     <button class="close-pinned-modal"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="modal-body" id="pinned-list-container">
-                    <div class="loading">Loading...</div>
-                </div>
+                <div class="modal-body" id="pinned-list-container"><div class="loading">Loading...</div></div>
             </div>
         </div>
 
-        <!-- BOTTOM NAVIGATION -->
         <div class="bottom-nav">
-            <div id="nav-private" class="nav-item active" data-tab="private">
-                <i class="fas fa-comment-dots"></i>
-                <span>Chat</span>
-            </div>
-            <div id="nav-room" class="nav-item" data-tab="room">
-                <i class="fas fa-users"></i>
-                <span>Room</span>
-            </div>
+            <div id="nav-private" class="nav-item active" data-tab="private"><i class="fas fa-comment-dots"></i><span>Chat</span></div>
+            <div id="nav-room" class="nav-item" data-tab="room"><i class="fas fa-users"></i><span>Room</span></div>
         </div>
 
-        <!-- PRIVATE CHAT TAB -->
         <div id="private-tab" class="main-tab active">
             <div class="chat-list-header">
                 <i class="fas fa-search"></i>
@@ -212,7 +189,7 @@
             <div id="user-list-container" class="user-list-container">
                 <div class="loading">Loading users...</div>
             </div>
-            <div id="private-chat-screen" class="private-chat-screen">
+            <div id="private-chat-screen" class="private-chat-screen" style="display: none;">
                 <div class="private-chat-header">
                     <button id="back-to-list"><i class="fas fa-arrow-left"></i></button>
                     <div class="private-chat-info">
@@ -230,10 +207,13 @@
             </div>
         </div>
 
-        <!-- ROOM CHAT TAB -->
         <div id="room-tab" class="main-tab">
             <div id="room-chat-screen" class="room-chat-screen"></div>
             <div class="room-input-container">
+                <div id="reply-indicator" class="reply-indicator" style="display: none;">
+                    <div><i class="fas fa-reply-all"></i> <strong>Membalas:</strong> <span id="reply-preview-text"></span></div>
+                    <button type="button" id="cancel-reply-btn" onclick="cancelReply()"><i class="fas fa-times"></i></button>
+                </div>
                 <form id="room-chat-form">
                     <input type="text" id="room-chat-in" placeholder="Ketik @ untuk tag user...">
                     <button type="submit"><i class="fas fa-paper-plane"></i></button>
@@ -241,24 +221,16 @@
             </div>
         </div>
 
-        <!-- AI BUTTON -->
-        <button id="ai-button" class="ai-button">
-            <i class="fas fa-brain"></i>
-            <span>AI</span>
-        </button>
+        <button id="ai-button" class="ai-button"><i class="fas fa-brain"></i><span>AI</span></button>
 
-        <!-- AI MODAL -->
         <div id="ai-modal" class="ai-modal">
             <div class="ai-modal-content">
                 <div class="ai-header">
-                    <div class="ai-title">
-                        <i class="fas fa-brain"></i>
-                        <h3>AI Assistant</h3>
-                    </div>
+                    <div class="ai-title"><i class="fas fa-brain"></i><h3>AI Assistant</h3></div>
                     <button id="close-ai"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="ai-messages" id="ai-messages">
-                    <div class="ai-message bot"><div class="ai-bubble">Halo! Saya AI Assistant. Ada yang bisa saya bantu?</div></div>
+                    <div class="ai-message bot"><div class="ai-bubble">Halo! Ada yang bisa saya bantu?</div></div>
                 </div>
                 <div class="ai-input">
                     <form id="ai-chat-form">
@@ -270,7 +242,6 @@
         </div>
     </div>
 
-    <!-- WELCOME MODAL -->
     <div id="welcome-modal" class="welcome-modal">
         <div class="welcome-content">
             <div class="welcome-thumb"><img src="https://files.catbox.moe/hohg36.jpg"></div>

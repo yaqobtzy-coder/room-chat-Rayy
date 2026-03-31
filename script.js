@@ -1,6 +1,5 @@
 // ========================================
-// FURAB V14 - FULL LOGIC - PART 1/4
-// Initialization, Auth, Encryption, Story
+// FURAB V14 - FULL LOGIC
 // ========================================
 
 const firebaseConfig = { databaseURL: "https://rayy-all-web-default-rtdb.asia-southeast1.firebasedatabase.app" };
@@ -20,7 +19,6 @@ let activeStatus = [];
 let statusIdx = 0;
 let statusTimer;
 
-// Encryption
 function encryptMessage(text, key) {
     let result = '';
     for (let i = 0; i < text.length; i++) {
@@ -49,7 +47,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ========== AUTH ==========
 function checkAuth() {
     currentUser = localStorage.getItem('furab_user');
     if (currentUser) {
@@ -128,7 +125,10 @@ function logout() {
     location.reload();
 }
 
-// ========== STORY ==========
+function closeWelcomeModal() {
+    document.getElementById('welcome-modal').style.display = 'none';
+}
+
 function loadStory() {
     db.ref('status_room').on('value', snap => {
         activeStatus = [];
@@ -194,11 +194,7 @@ function closeStory() {
     document.getElementById('story-media').innerHTML = '';
     clearTimeout(statusTimer);
 }
-// ========================================
-// PART 2/4 - Member List, Pin Message, Sidebar, Modals, Unread
-// ========================================
 
-// ========== MEMBER LIST ==========
 function openMemberModal() {
     const container = document.getElementById('member-list-container');
     container.innerHTML = '<div class="loading">Loading members...</div>';
@@ -235,7 +231,6 @@ function closeMemberModal() {
     document.getElementById('member-modal').style.display = 'none';
 }
 
-// ========== PIN MESSAGE ==========
 async function pinMessage(messageId, messageData, isRoom = true) {
     const pinData = {
         messageId: messageId,
@@ -250,7 +245,7 @@ async function pinMessage(messageId, messageData, isRoom = true) {
     await db.ref(`pinned_messages/${currentUser}`).set(pinData);
     pinnedMessage = pinData;
     showPinnedBanner(pinData);
-    alert("✅ Pesan berhasil di-pin! Banner akan muncul di bawah nama room.");
+    alert("✅ Pesan berhasil di-pin!");
 }
 
 async function unpinMessage() {
@@ -265,8 +260,10 @@ async function unpinMessage() {
 function showPinnedBanner(pinData) {
     const banner = document.getElementById('pinned-banner');
     const textEl = document.getElementById('pinned-text');
-    textEl.innerHTML = `<strong>@${pinData.user}</strong>: ${escapeHtml(pinData.text)}`;
-    banner.style.display = 'flex';
+    if (banner && textEl) {
+        textEl.innerHTML = `<strong>@${pinData.user}</strong>: ${escapeHtml(pinData.text)}`;
+        banner.style.display = 'flex';
+    }
 }
 
 function loadPinnedMessage() {
@@ -277,14 +274,15 @@ function loadPinnedMessage() {
             showPinnedBanner(data);
         } else {
             pinnedMessage = null;
-            document.getElementById('pinned-banner').style.display = 'none';
+            const banner = document.getElementById('pinned-banner');
+            if (banner) banner.style.display = 'none';
         }
     });
 }
 
 function openPinnedModal() {
     const container = document.getElementById('pinned-list-container');
-    if (pinnedMessage) {
+    if (pinnedMessage && container) {
         container.innerHTML = `
             <div class="update-card">
                 <div class="update-date">Dipin pada: ${new Date(pinnedMessage.ts).toLocaleString()}</div>
@@ -293,7 +291,7 @@ function openPinnedModal() {
                 <button class="btn" style="margin-top: 12px; background: var(--danger);" onclick="unpinMessage(); closePinnedModal();">Hapus Pin</button>
             </div>
         `;
-    } else {
+    } else if (container) {
         container.innerHTML = '<div style="text-align: center; padding: 20px;">Belum ada pesan terpin</div>';
     }
     document.getElementById('pinned-modal').style.display = 'flex';
@@ -303,13 +301,13 @@ function closePinnedModal() {
     document.getElementById('pinned-modal').style.display = 'none';
 }
 
-// ========== SIDEBAR ==========
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar-menu');
-    sidebar.style.display = sidebar.style.display === 'flex' ? 'none' : 'flex';
+    if (sidebar) {
+        sidebar.style.display = sidebar.style.display === 'flex' ? 'none' : 'flex';
+    }
 }
 
-// ========== MODALS ==========
 function openInfoModal() {
     toggleSidebar();
     loadUpdatesToModal();
@@ -333,6 +331,7 @@ function closeUnreadModal() { document.getElementById('unread-modal').style.disp
 function loadUpdatesToModal() {
     db.ref('info_updates').on('value', snap => {
         const container = document.getElementById('update-list-modal');
+        if (!container) return;
         container.innerHTML = '';
         const data = snap.val();
         if (data) {
@@ -352,7 +351,6 @@ function loadUpdatesToModal() {
     });
 }
 
-// ========== UNREAD MESSAGES ==========
 function updateUnreadCount() {
     let totalUnread = 0;
     unreadMessages = [];
@@ -370,14 +368,21 @@ function updateUnreadCount() {
     const headerBadge = document.getElementById('header-unread-badge');
     const sidebarCount = document.getElementById('sidebar-unread-count');
     
-    if (unreadCount > 0) {
-        headerBadge.style.display = 'inline-block';
-        headerBadge.innerText = unreadCount > 9 ? '9+' : unreadCount;
-        sidebarCount.style.display = 'inline-block';
-        sidebarCount.innerText = unreadCount;
-    } else {
-        headerBadge.style.display = 'none';
-        sidebarCount.style.display = 'none';
+    if (headerBadge) {
+        if (unreadCount > 0) {
+            headerBadge.style.display = 'inline-block';
+            headerBadge.innerText = unreadCount > 9 ? '9+' : unreadCount;
+        } else {
+            headerBadge.style.display = 'none';
+        }
+    }
+    if (sidebarCount) {
+        if (unreadCount > 0) {
+            sidebarCount.style.display = 'inline-block';
+            sidebarCount.innerText = unreadCount;
+        } else {
+            sidebarCount.style.display = 'none';
+        }
     }
 }
 
@@ -398,12 +403,13 @@ function incrementUnreadCount(fromUser) {
 
 function renderUnreadList() {
     const container = document.getElementById('unread-list-container');
+    if (!container) return;
     if (unreadMessages.length === 0) {
         container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--gray);">Tidak ada pesan belum dibaca</div>';
         return;
     }
     container.innerHTML = unreadMessages.map(u => `
-        <div class="user-item" onclick="openPrivateChatFromUnread('${u.user}')">
+        <div class="user-item" onclick="openPrivateChat('${u.user}')">
             <div class="user-avatar">${u.user.charAt(0).toUpperCase()}</div>
             <div class="user-info">
                 <div class="user-name">@${u.user}</div>
@@ -414,15 +420,6 @@ function renderUnreadList() {
     `).join('');
 }
 
-function openPrivateChatFromUnread(username) {
-    closeUnreadModal();
-    openPrivateChat(username);
-}
-// ========================================
-// PART 3/4 - Switch Tab, Private Chat, Room Chat
-// ========================================
-
-// ========== SWITCH TAB ==========
 function switchTab(tab) {
     currentTab = tab;
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -435,8 +432,6 @@ function switchTab(tab) {
         else loadUserList();
     }
 }
-
-// ========== PRIVATE CHAT ==========
 function loadUserList() {
     db.ref('users').on('value', snap => {
         allUsers = [];
@@ -459,6 +454,8 @@ function loadUserList() {
 
 function renderUserList(users) {
     const container = document.getElementById('user-list-container');
+    if (!container) return;
+    
     if (users.length === 0) {
         container.innerHTML = '<div class="loading">Tidak ada user lain</div>';
         return;
@@ -492,19 +489,32 @@ function filterUserList() {
     renderUserList(filtered);
 }
 
-function openPrivateChat(username) {
+window.openPrivateChat = function(username) {
+    console.log("Opening private chat with:", username);
+    if (!username) return;
     currentPrivateChatWith = username;
     markAsReadFromUser(username);
-    document.getElementById('user-list-container').style.display = 'none';
-    document.getElementById('private-chat-screen').style.display = 'flex';
-    document.getElementById('private-chat-name').innerText = `@${username}`;
+    
+    const userListContainer = document.getElementById('user-list-container');
+    const privateChatScreen = document.getElementById('private-chat-screen');
+    const privateChatName = document.getElementById('private-chat-name');
+    const privateChatStatus = document.getElementById('private-chat-status');
+    
+    if (userListContainer) userListContainer.style.display = 'none';
+    if (privateChatScreen) privateChatScreen.style.display = 'flex';
+    if (privateChatName) privateChatName.innerHTML = `@${username}`;
+    if (privateChatStatus) privateChatStatus.innerHTML = 'online';
+    
     loadPrivateMessages(username);
 }
 
 function backToUserList() {
     currentPrivateChatWith = null;
-    document.getElementById('user-list-container').style.display = 'block';
-    document.getElementById('private-chat-screen').style.display = 'none';
+    const userListContainer = document.getElementById('user-list-container');
+    const privateChatScreen = document.getElementById('private-chat-screen');
+    
+    if (userListContainer) userListContainer.style.display = 'block';
+    if (privateChatScreen) privateChatScreen.style.display = 'none';
     loadUserList();
 }
 
@@ -516,6 +526,7 @@ function loadPrivateMessages(withUser) {
     const path = `private_chats/${currentUser}_${withUser}`;
     db.ref(path).limitToLast(50).on('value', snap => {
         const container = document.getElementById('private-chat-messages');
+        if (!container) return;
         container.innerHTML = '';
         const data = snap.val();
         if (data) {
@@ -569,10 +580,10 @@ async function sendPrivateMessage(e) {
     input.value = '';
 }
 
-// ========== ROOM CHAT ==========
 function loadRoomMessages() {
     db.ref('messages_room').limitToLast(50).on('value', snap => {
         const container = document.getElementById('room-chat-screen');
+        if (!container) return;
         const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 50;
         
         container.innerHTML = '';
@@ -599,7 +610,6 @@ async function renderRoomMessage(data, messageId) {
         const userSnap = await db.ref(`users/${data.user}`).once('value');
         if (userSnap.exists()) {
             isVerified = userSnap.val().verified || false;
-            if (userSnap.val().level === 'owner') isOwner = true;
         }
     }
     
@@ -649,33 +659,11 @@ async function renderRoomMessage(data, messageId) {
     `;
     container.appendChild(messageDiv);
 }
-// ========================================
-// PART 4/4 - Reply, Tag, Notification, AI, Send Message, Boot, Events
-// ========================================
 
-// REPLY FUNCTION
 function replyToMessage(messageId, user, text) {
     replyTo = { messageId: messageId, user: user, text: text };
-    let replyIndicator = document.getElementById('reply-indicator');
-    let replyText = document.getElementById('reply-preview-text');
-    
-    // Create reply indicator if not exists
-    if (!replyIndicator) {
-        const roomInputContainer = document.querySelector('.room-input-container');
-        if (roomInputContainer) {
-            replyIndicator = document.createElement('div');
-            replyIndicator.id = 'reply-indicator';
-            replyIndicator.className = 'reply-indicator';
-            replyIndicator.style.display = 'flex';
-            replyIndicator.innerHTML = `
-                <div><i class="fas fa-reply-all"></i> <strong>Membalas:</strong> <span id="reply-preview-text"></span></div>
-                <button type="button" id="cancel-reply-btn" onclick="cancelReply()"><i class="fas fa-times"></i></button>
-            `;
-            roomInputContainer.prepend(replyIndicator);
-            replyText = document.getElementById('reply-preview-text');
-        }
-    }
-    
+    const replyIndicator = document.getElementById('reply-indicator');
+    const replyText = document.getElementById('reply-preview-text');
     if (replyIndicator && replyText) {
         replyIndicator.style.display = 'flex';
         replyText.innerHTML = `<strong>@${user}</strong>: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`;
@@ -689,7 +677,6 @@ function cancelReply() {
     if (replyIndicator) replyIndicator.style.display = 'none';
 }
 
-// TAG USER POPUP
 function showUserList(filter) {
     let popup = document.getElementById('user-list-popup');
     if (!popup) {
@@ -719,7 +706,7 @@ function showUserList(filter) {
     
     popup.innerHTML = `
         <div class="tag-all-btn" onclick="insertTag('@all')">
-            <i class="fas fa-bullhorn"></i> TAG ALL (Mention Semua)
+            <i class="fas fa-bullhorn"></i> TAG ALL
         </div>
         ${filtered.map(u => `
             <div class="user-list-item" onclick="insertTag('@${u.name}')">
@@ -741,7 +728,6 @@ function insertTag(tag) {
     if (popup) popup.style.display = 'none';
 }
 
-// NOTIFICATION
 function showInAppNotification(title, body) {
     let toastContainer = document.getElementById('toast-container');
     if (!toastContainer) {
@@ -789,12 +775,10 @@ function showInAppNotification(title, body) {
     setTimeout(() => toast.remove(), 4000);
 }
 
-// ========== SEND ROOM MESSAGE (FIX) ==========
 async function sendRoomMessage(e) {
     e.preventDefault();
     const input = document.getElementById('room-chat-in');
     if (!input) return;
-    
     let msg = input.value.trim();
     if (!msg) return;
     
@@ -810,14 +794,12 @@ async function sendRoomMessage(e) {
     const popup = document.getElementById('user-list-popup');
     if (popup) popup.style.display = 'none';
     
-    // Process @all mention
     if (msg.includes('@all')) {
         const mentions = allUsers.map(u => `@${u.name}`).join(' ');
         await db.ref('messages_room').push({ user: 'SYSTEM', text: `📢 MENTION ALL dari @${currentUser}: ${mentions}`, time: time, ts: Date.now() });
         showInAppNotification('📢 MENTION ALL', `${currentUser} menyebut semua orang`);
     }
     
-    // Process @user mentions
     const mentionMatches = msg.match(/@(\w+)/g);
     if (mentionMatches) {
         mentionMatches.forEach(tag => {
@@ -828,7 +810,6 @@ async function sendRoomMessage(e) {
         });
     }
     
-    // Verified command
     if (msg.startsWith('/v ') && currentUser === 'rayy') {
         const target = msg.split(' ')[1];
         if (target) {
@@ -838,10 +819,8 @@ async function sendRoomMessage(e) {
         return;
     }
     
-    // Send message to room
     await db.ref('messages_room').push(messageObj);
     
-    // Auto scroll to bottom
     const container = document.getElementById('room-chat-screen');
     if (container) {
         setTimeout(() => {
@@ -850,7 +829,6 @@ async function sendRoomMessage(e) {
     }
 }
 
-// ========== AI CHAT ==========
 function toggleAIChat() {
     const modal = document.getElementById('ai-modal');
     if (modal) {
@@ -886,29 +864,30 @@ async function sendAIMessage(e) {
     container.scrollTop = container.scrollHeight;
 }
 
-// ========== ROOM SETTINGS SYNC (MUTE) ==========
 db.ref('settings').on('value', snap => {
     const d = snap.val() || {};
-    document.getElementById('room-name').innerText = d.roomName || 'FURAB ROOM';
-    if (d.roomAvatar) document.getElementById('avatar-img').src = d.roomAvatar;
-    if (d.roomStatus) document.getElementById('room-status').innerHTML = `<i class="fas fa-circle" style="font-size:8px;"></i> ${d.roomStatus}`;
-    
-    const isMuted = d.isMutedAll && currentUser !== 'rayy';
+    const roomNameEl = document.getElementById('room-name');
+    const avatarEl = document.getElementById('avatar-img');
+    const statusEl = document.getElementById('room-status');
     const muteNotice = document.getElementById('mute-notice');
     const roomInput = document.getElementById('room-chat-in');
+    
+    if (roomNameEl) roomNameEl.innerText = d.roomName || 'FURAB ROOM';
+    if (avatarEl && d.roomAvatar) avatarEl.src = d.roomAvatar;
+    if (statusEl && d.roomStatus) statusEl.innerHTML = `<i class="fas fa-circle" style="font-size:8px;"></i> ${d.roomStatus}`;
+    
+    const isMuted = d.isMutedAll && currentUser !== 'rayy';
     if (muteNotice) muteNotice.style.display = isMuted ? 'block' : 'none';
     if (roomInput) roomInput.disabled = isMuted;
 });
-
-// ========== BOOT ==========
 function boot() {
+    console.log("Boot started, user:", currentUser);
     loadUserList();
     loadRoomMessages();
     loadUpdatesToModal();
     loadPinnedMessage();
     loadStory();
     
-    // Add event listener for @ mention
     const roomInput = document.getElementById('room-chat-in');
     if (roomInput) {
         roomInput.addEventListener('input', (e) => {
@@ -923,17 +902,16 @@ function boot() {
         });
     }
     
-    // Attach form submit handler
-    const roomForm = document.getElementById('room-chat-form');
-    if (roomForm) {
-        roomForm.removeEventListener('submit', sendRoomMessage);
-        roomForm.addEventListener('submit', sendRoomMessage);
-    }
-    
     const privateForm = document.getElementById('private-chat-form');
     if (privateForm) {
         privateForm.removeEventListener('submit', sendPrivateMessage);
         privateForm.addEventListener('submit', sendPrivateMessage);
+    }
+    
+    const roomForm = document.getElementById('room-chat-form');
+    if (roomForm) {
+        roomForm.removeEventListener('submit', sendRoomMessage);
+        roomForm.addEventListener('submit', sendRoomMessage);
     }
     
     const aiForm = document.getElementById('ai-chat-form');
@@ -941,17 +919,20 @@ function boot() {
         aiForm.removeEventListener('submit', sendAIMessage);
         aiForm.addEventListener('submit', sendAIMessage);
     }
+    
+    const searchInput = document.getElementById('search-user');
+    if (searchInput) {
+        searchInput.addEventListener('input', filterUserList);
+    }
 }
 
-// ========== EVENT LISTENERS ==========
 document.getElementById('login-btn').onclick = handleLogin;
 document.getElementById('register-btn').onclick = handleRegister;
 document.getElementById('logout-btn').onclick = logout;
 document.getElementById('menu-btn').onclick = toggleSidebar;
 document.getElementById('close-sidebar').onclick = toggleSidebar;
-if (document.querySelector('.sidebar-overlay')) {
-    document.querySelector('.sidebar-overlay').onclick = toggleSidebar;
-}
+const sidebarOverlay = document.querySelector('.sidebar-overlay');
+if (sidebarOverlay) sidebarOverlay.onclick = toggleSidebar;
 document.getElementById('info-update-btn').onclick = openInfoModal;
 document.getElementById('dev-contact-btn').onclick = openDevModal;
 document.getElementById('unread-messages-item').onclick = openUnreadModal;
@@ -965,7 +946,6 @@ document.querySelector('.close-pinned-modal').onclick = closePinnedModal;
 document.getElementById('nav-private').onclick = () => switchTab('private');
 document.getElementById('nav-room').onclick = () => switchTab('room');
 document.getElementById('back-to-list').onclick = backToUserList;
-document.getElementById('search-user').oninput = filterUserList;
 document.getElementById('ai-button').onclick = toggleAIChat;
 document.getElementById('close-ai').onclick = toggleAIChat;
 document.getElementById('close-welcome').onclick = () => document.getElementById('welcome-modal').style.display = 'none';
@@ -979,11 +959,12 @@ window.replyToMessage = replyToMessage;
 window.cancelReply = cancelReply;
 window.insertTag = insertTag;
 window.closeMemberModal = closeMemberModal;
-window.openPrivateChatFromUnread = openPrivateChatFromUnread;
 window.closePinnedModal = closePinnedModal;
 window.closeStory = closeStory;
+window.openPrivateChat = openPrivateChat;
+window.filterUserList = filterUserList;
+window.closeWelcomeModal = closeWelcomeModal;
 
-// Add CSS for popup
 const style = document.createElement('style');
 style.textContent = `
     .user-list-popup {
@@ -1019,25 +1000,6 @@ style.textContent = `
         text-align: center;
         font-weight: 700;
         cursor: pointer;
-    }
-    .reply-indicator {
-        background: rgba(142,68,173,0.2);
-        border-left: 3px solid #f39c12;
-        padding: 8px 12px;
-        margin-bottom: 10px;
-        border-radius: 12px;
-        display: none;
-        font-size: 12px;
-        justify-content: space-between;
-        align-items: center;
-        color: white;
-    }
-    #cancel-reply-btn {
-        background: none;
-        border: none;
-        color: var(--danger);
-        cursor: pointer;
-        font-size: 14px;
     }
     @keyframes slideInDown {
         from { opacity: 0; transform: translateY(-20px); }
