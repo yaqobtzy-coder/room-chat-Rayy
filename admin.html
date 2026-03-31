@@ -333,6 +333,7 @@ height: 100%; object-fit: cover; }
             font-size: 9px;
             text-align: center;
         }
+
         /* STATS */
         .stats-row {
             display: grid;
@@ -420,7 +421,8 @@ line-height: 1.5; }
     </style>
 </head>
 <body>
-<!-- AUTH VIEW -->
+
+    <!-- AUTH VIEW -->
     <div id="auth-view">
         <div class="auth-card">
             <div class="auth-logo"><i class="fas 
@@ -457,8 +459,7 @@ ADMIN</span>
                 <div class="nav-link active" 
 onclick="switchTab(this, 'dashboard')"><i class="fas fa-chart-line"></i> <span>Dashboard</span></div>
                 <div class="nav-link" onclick="switchTab(this, 
-'room-settings')"><i class="fas fa-server"></i> <span>Room 
-Settings</span></div>
+'room-settings')"><i class="fas fa-server"></i> <span>Room Settings</span></div>
                 <div class="nav-link" onclick="switchTab(this, 
 'update-manager')"><i class="fas fa-bell"></i> <span>Info Update</span></div>
                 <div class="nav-link" onclick="switchTab(this, 
@@ -515,7 +516,8 @@ onclick="backupDatabase()"><i class="fas fa-download"></i> Backup Data</button>
                     </div>
                 </div>
             </section>
-           <!-- ROOM SETTINGS -->
+
+            <!-- ROOM SETTINGS -->
             <section id="room-settings" class="tab-section">
                 <div class="page-header">
                     <h1>Room Settings</h1>
@@ -553,430 +555,405 @@ AI</label><input type="text" id="ai-name-input" class="input"></div>
 onclick="updateRoomPrivacy()"><i class="fas fa-shield"></i> UPDATE PRIVACY</button>
                     </div>
                 </div>
-            </section>
-
-            <!-- INFO UPDATE MANAGER -->
-            <section id="update-manager" class="tab-section">
-                <div class="page-header">
-                    <h1>Info Update Manager</h1>
-                    <p>Kelola informasi update yang muncul di 
+            </section>        <!-- INFO UPDATE MANAGER -->
+        <section id="update-manager" class="tab-section">
+            <div class="page-header">
+                <h1>Info Update Manager</h1>
+                <p>Kelola informasi update yang muncul di 
 sidebar room chat.</p>
-                </div>
-                <div class="grid-layout">
-                    <div class="card">
-                        <div class="card-title"><i class="fas 
-fa-plus-circle"></i> Add New Update</div>
-                        <div 
-class="field-group"><label>Tanggal</label><input type="text" id="update-date" class="input" placeholder="30 Maret 2026"></div>
-                        <div class="field-group"><label>Judul 
-Update</label><input type="text" id="update-title" class="input" placeholder="🎉 Fitur Baru!"></div>
-                        <div 
-class="field-group"><label>Deskripsi</label><textarea id="update-desc" class="input" rows="3" placeholder="Detail update..."></textarea></div>
-                        <button class="btn" 
-onclick="addUpdate()"><i class="fas fa-plus"></i> ADD UPDATE</button>
-                    </div>
-                    <div class="card">
-                        <div class="card-title"><i class="fas 
-fa-list"></i> Update List</div>
-                        <div id="update-list-container" 
-class="update-list"></div>
-                    </div>
-                </div>
-            </section>
-<!-- USER MANAGER -->
-            <section id="user-manager" class="tab-section">
-                <div class="page-header">
-                    <h1>User Manager</h1>
-                    <p>Manajemen user, verified, dan hapus 
-akun.</p>
-                    <button class="btn btn-sm" 
-style="margin-top: 10px;" onclick="exportUsersCSV()"><i class="fas fa-download"></i> Export CSV</button>
-                </div>
-                <div class="card">
-                    <div class="card-title"><i class="fas 
-fa-table-list"></i> Registered Users</div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr><th>Username</th><th>Level</th><th>Verified</th><th>Join 
-Date</th><th>Actions</th></tr>
-                            </thead>
-                            <tbody 
-id="user-list-table"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- STATUS STORY MANAGER -->
-            <section id="story-manager" class="tab-section">
-                <div class="page-header">
-                    <h1>Status Story Manager</h1>
-                    <p>Buat dan kelola status untuk room 
-chat.</p>
-                </div>
-                <div class="grid-layout">
-                    <div class="card">
-                        <div class="card-title"><i class="fas 
-fa-plus-circle"></i> Create New Status</div>
-                        <div class="field-group"><label>Media 
-URL</label><input type="text" id="status-url" class="input"></div>
-                        <div 
-class="field-group"><label>Caption</label><input type="text" id="status-caption" class="input"></div>
-                        <div 
-class="field-group"><label>Type</label><select id="status-type" class="input"><option value="image">Image</option><option value="video">Video</option></select></div>
-                        <button class="btn" 
-onclick="uploadStatus()"><i class="fas fa-upload"></i> POST STATUS</button>
-                    </div>
-                    <div class="card">
-                        <div class="card-title"><i class="fas 
-fa-history"></i> Active Status List</div>
-                        <div id="status-list-container" 
-class="media-preview-list"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PINNED MESSAGES MANAGER -->
-            <section id="pin-manager" class="tab-section">
-                <div class="page-header">
-                    <h1>Pinned Messages Manager</h1>
-                    <p>Kelola pesan yang di-pin oleh user.</p>
-                </div>
-                <div class="card">
-                    <div class="card-title"><i class="fas 
-fa-thumbtack"></i> All Pinned Messages</div>
-                    <div id="pinned-list-container-admin" 
-class="update-list"></div>
-                </div>
-            </section>
-
-            <!-- BROADCAST -->
-            <section id="broadcast" class="tab-section">
-                <div class="page-header">
-                    <h1>Neural Broadcast</h1>
-                    <p>Kirim pesan massal ke Public Chat.</p>
-                </div>
-                <div class="card" style="max-width: 600px; 
-margin: 0 auto;">
-                    <div class="card-title"><i class="fas 
-fa-paper-plane"></i> Create Broadcast</div>
-                    <div class="field-group"><label>Broadcast 
-Message</label><textarea id="broadcast-text" class="input" rows="4" placeholder="Tulis pesan broadcast..."></textarea></div>
-                    <div style="display: flex; gap: 15px;">
-                        <button class="btn" 
-onclick="sendBroadcast(false)"><i class="fas fa-paper-plane"></i> SEND REGULAR</button>
-                        <button class="btn btn-warning" 
-onclick="sendBroadcast(true)"><i class="fas fa-tag"></i> SEND & TAG ALL</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- SYSTEM -->
-            <section id="system" class="tab-section">
-                <div class="page-header">
-                    <h1>System Control</h1>
-                    <p>Backup, restore, dan maintenance 
-database.</p>
-                </div>
-                <div class="grid-layout">
-                    <div class="card">
-                        <div class="card-title"><i class="fas 
-fa-database"></i> Database Actions</div>
-                        <div style="display: flex; 
-flex-direction: column; gap: 12px;">
-                            <button class="btn" 
-onclick="backupDatabase()"><i class="fas fa-download"></i> BACKUP ALL DATA (JSON)</button>
-                            <button class="btn btn-danger" 
-onclick="wipeData('messages_room')"><i class="fas fa-trash"></i> WIPE ROOM CHATS</button>
-                            <button class="btn btn-danger" 
-onclick="wipeData('status_room')"><i class="fas fa-trash"></i> WIPE ALL STATUS</button>
-                            <button class="btn btn-danger" 
-onclick="wipeData('private_chats')"><i class="fas fa-trash"></i> WIPE ALL PRIVATE CHATS</button>
-                            <button class="btn btn-danger" 
-onclick="wipeData('pinned_messages')"><i class="fas fa-trash"></i> WIPE ALL PINNED MESSAGES</button>
-                            <button class="btn" 
-onclick="resetRoomSettings()"><i class="fas fa-undo"></i> RESET ROOM SETTINGS</button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title"><i class="fas 
-fa-chart-line"></i> System Info</div>
-                        <div id="system-info" style="padding: 
-15px; text-align: center;"></div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-<!-- MODAL GANTI PASSWORD -->
-    <div id="password-modal" class="modal">
-        <div class="modal-content">
-            <h3>Ganti Password</h3>
-            <div 
-class="field-group"><label>Username</label><input type="text" id="modal-username" class="input" disabled></div>
-            <div class="field-group"><label>Password 
-Baru</label><input type="password" id="modal-new-password" class="input" placeholder="Masukkan password baru"></div>
-            <div style="display: flex; gap: 10px; margin-top: 
-20px;">
-                <button class="btn" 
-onclick="saveNewPassword()"><i class="fas fa-save"></i> SAVE</button>
-                <button class="btn btn-danger" 
-onclick="closePasswordModal()"><i class="fas fa-times"></i> CANCEL</button>
             </div>
+            <div class="grid-layout">
+                <div class="card">
+                    <div class="card-title"><i class="fas 
+fa-plus-circle"></i> Add New Update</div>
+                    <div 
+class="field-group"><label>Tanggal</label><input type="text" id="update-date" class="input" placeholder="30 Maret 2026"></div>
+                    <div class="field-group"><label>Judul 
+Update</label><input type="text" id="update-title" class="input" placeholder="🎉 Fitur Baru!"></div>
+                    <div 
+class="field-group"><label>Deskripsi</label><textarea id="update-desc" class="input" rows="3" placeholder="Detail update..."></textarea></div>
+                    <button class="btn" 
+onclick="addUpdate()"><i class="fas fa-plus"></i> ADD UPDATE</button>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas 
+fa-list"></i> Update List</div>
+                    <div id="update-list-container" 
+class="update-list"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- USER MANAGER -->
+        <section id="user-manager" class="tab-section">
+            <div class="page-header">
+                <h1>User Manager</h1>
+                <p>Manajemen user, verified, dan hapus 
+akun.</p>
+                <button class="btn btn-sm" style="margin-top: 
+10px;" onclick="exportUsersCSV()"><i class="fas fa-download"></i> Export CSV</button>
+            </div>
+            <div class="card">
+                <div class="card-title"><i class="fas 
+fa-table-list"></i> Registered Users</div>
+                <div class="table-container">
+                     <table>
+                        <thead>
+                             <tr><th>Username</th><th>Level</th><th>Verified</th><th>Join 
+Date</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="user-list-table"></tbody>
+                     </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATUS STORY MANAGER -->
+        <section id="story-manager" class="tab-section">
+            <div class="page-header">
+                <h1>Status Story Manager</h1>
+                <p>Buat dan kelola status untuk room chat.</p>
+            </div>
+            <div class="grid-layout">
+                <div class="card">
+                    <div class="card-title"><i class="fas 
+fa-plus-circle"></i> Create New Status</div>
+                    <div class="field-group"><label>Media 
+URL</label><input type="text" id="status-url" class="input"></div>
+                    <div 
+class="field-group"><label>Caption</label><input type="text" id="status-caption" class="input"></div>
+                    <div 
+class="field-group"><label>Type</label><select id="status-type" class="input"><option value="image">Image</option><option value="video">Video</option></select></div>
+                    <button class="btn" 
+onclick="uploadStatus()"><i class="fas fa-upload"></i> POST STATUS</button>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas 
+fa-history"></i> Active Status List</div>
+                    <div id="status-list-container" 
+class="media-preview-list"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PINNED MESSAGES MANAGER -->
+        <section id="pin-manager" class="tab-section">
+            <div class="page-header">
+                <h1>Pinned Messages Manager</h1>
+                <p>Kelola pesan yang di-pin oleh user. Admin 
+bisa hapus pin dari user mana pun dan kirim pin global.</p>
+            </div>
+            <div class="card">
+                <div class="card-title"><i class="fas 
+fa-thumbtack"></i> All Pinned Messages</div>
+                <div id="pinned-list-container-admin" 
+class="update-list"></div>
+            </div>
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-title"><i class="fas 
+fa-globe"></i> Kirim Pin Global (Announcement)</div>
+                <div class="field-group"><label>Pesan Global 
+Pin</label><textarea id="global-pin-text" class="input" rows="3" placeholder="Tulis pengumuman yang akan di-pin ke semua user..."></textarea></div>
+                <button class="btn btn-warning" 
+onclick="sendGlobalPin()"><i class="fas fa-globe"></i> KIRIM PIN GLOBAL</button>
+            </div>
+        </section>
+
+        <!-- BROADCAST -->
+        <section id="broadcast" class="tab-section">
+            <div class="page-header">
+                <h1>Neural Broadcast</h1>
+                <p>Kirim pesan massal ke Public Chat.</p>
+            </div>
+            <div class="card" style="max-width: 600px; margin: 
+0 auto;">
+                <div class="card-title"><i class="fas 
+fa-paper-plane"></i> Create Broadcast</div>
+                <div class="field-group"><label>Broadcast 
+Message</label><textarea id="broadcast-text" class="input" rows="4" placeholder="Tulis pesan broadcast..."></textarea></div>
+                <div style="display: flex; gap: 15px;">
+                    <button class="btn" 
+onclick="sendBroadcast(false)"><i class="fas fa-paper-plane"></i> SEND REGULAR</button>
+                    <button class="btn btn-warning" 
+onclick="sendBroadcast(true)"><i class="fas fa-tag"></i> SEND & TAG ALL</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SYSTEM -->
+        <section id="system" class="tab-section">
+            <div class="page-header">
+                <h1>System Control</h1>
+                <p>Backup, restore, dan maintenance 
+database.</p>
+            </div>
+            <div class="grid-layout">
+                <div class="card">
+                    <div class="card-title"><i class="fas 
+fa-database"></i> Database Actions</div>
+                    <div style="display: flex; flex-direction: 
+column; gap: 12px;">
+                        <button class="btn" 
+onclick="backupDatabase()"><i class="fas fa-download"></i> BACKUP ALL DATA (JSON)</button>
+                        <button class="btn btn-danger" 
+onclick="wipeData('messages_room')"><i class="fas fa-trash"></i> WIPE ROOM CHATS</button>
+                        <button class="btn btn-danger" 
+onclick="wipeData('status_room')"><i class="fas fa-trash"></i> WIPE ALL STATUS</button>
+                        <button class="btn btn-danger" 
+onclick="wipeData('private_chats')"><i class="fas fa-trash"></i> WIPE ALL PRIVATE CHATS</button>
+                        <button class="btn btn-danger" 
+onclick="wipeData('pinned_messages')"><i class="fas fa-trash"></i> WIPE ALL PINNED MESSAGES</button>
+                        <button class="btn" 
+onclick="resetRoomSettings()"><i class="fas fa-undo"></i> RESET ROOM SETTINGS</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas 
+fa-chart-line"></i> System Info</div>
+                    <div id="system-info" style="padding: 
+15px; text-align: center;"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- MODAL GANTI PASSWORD -->
+<div id="password-modal" class="modal">
+    <div class="modal-content">
+        <h3>Ganti Password</h3>
+        <div class="field-group"><label>Username</label><input 
+type="text" id="modal-username" class="input" disabled></div>
+        <div class="field-group"><label>Password 
+Baru</label><input type="password" id="modal-new-password" class="input" placeholder="Masukkan password baru"></div>
+        <div style="display: flex; gap: 10px; margin-top: 
+20px;">
+            <button class="btn" onclick="saveNewPassword()"><i 
+class="fas fa-save"></i> SAVE</button>
+            <button class="btn btn-danger" 
+onclick="closePasswordModal()"><i class="fas fa-times"></i> CANCEL</button>
         </div>
     </div>
-
-    <script>
-        // ========================================
-        // FURAB ADMIN PANEL V14 - FULL FEATURES
-        // ========================================
-        
-        const firebaseConfig = { databaseURL: 
+</div><script>
+    // ========================================
+    // FURAB ADMIN PANEL V14 - PART 1
+    // ========================================
+    
+    const firebaseConfig = { databaseURL: 
 "https://rayy-all-web-default-rtdb.asia-southeast1.firebasedatabase.app" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        let currentAdmin = null;
-        let selectedUserForPassword = null;
-        let allUsers = [];
+    let currentAdmin = null;
+    let selectedUserForPassword = null;
 
-        // ========== AUTH ==========
-        function checkAdminAuth() {
-            currentAdmin = 
-localStorage.getItem('furab_admin');
-            if (currentAdmin === 'rayy') {
-                document.getElementById('auth-view').style.display 
+    function checkAdminAuth() {
+        currentAdmin = localStorage.getItem('furab_admin');
+        if (currentAdmin === 'rayy') {
+            document.getElementById('auth-view').style.display 
 = 'none';
-                document.getElementById('admin-panel').style.display 
+            document.getElementById('admin-panel').style.display 
 = 'flex';
-                loadDashboard();
-                loadAllData();
-            } else {
-                document.getElementById('auth-view').style.display 
+            loadDashboard();
+            loadAllData();
+        } else {
+            document.getElementById('auth-view').style.display 
 = 'flex';
-                document.getElementById('admin-panel').style.display 
+            document.getElementById('admin-panel').style.display 
 = 'none';
-            }
         }
+    }
 
-        async function adminLogin() {
-            const username = 
+    async function adminLogin() {
+        const username = 
 document.getElementById('admin-username').value.toLowerCase().trim();
-            const password = 
+        const password = 
 document.getElementById('admin-password').value;
-            
-            if (username !== 'rayy') {
-                alert("Akses ditolak! Hanya OWNER yang bisa 
+        if (username !== 'rayy') {
+            alert("Akses ditolak! Hanya OWNER yang bisa 
 mengakses panel admin.");
-                return;
-            }
-            
-            const snap = await 
+            return;
+        }
+        const snap = await 
 db.ref(`users/${username}`).once('value');
-            if (snap.exists() && snap.val().password === 
-password) {
-                localStorage.setItem('furab_admin', username);
-                location.reload();
-            } else {
-                alert("Password salah!");
-            }
-        }
-
-        function adminLogout() {
-            localStorage.removeItem('furab_admin');
-            location.reload();
-        }
-
-        // ========== NAVIGATION ==========
-        function switchTab(el, tabId) {
-            document.querySelectorAll('.nav-link').forEach(l 
-=> l.classList.remove('active'));
-            if (el) el.classList.add('active');
-            document.querySelectorAll('.tab-section').forEach(s 
-=> s.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-        }
-        // ========== NAVIGATION ==========
-        function switchTab(el, tabId) {
-            document.querySelectorAll('.nav-link').forEach(l 
-=> l.classList.remove('active'));
-            if (el) el.classList.add('active');
-            document.querySelectorAll('.tab-section').forEach(s 
-=> s.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        // ========== DASHBOARD ==========
-        function loadDashboard() {
-            db.ref('settings').on('value', snap => {
-                const d = snap.val() || {};
-                document.getElementById('stat-room-status').innerHTML 
-= d.isMutedAll ? '🔒 MUTED' : '🔓 ACTIVE';
-                document.getElementById('stat-room-status').style.color 
-= d.isMutedAll ? 'var(--danger)' : 'var(--success)';
-            });
-            db.ref('messages_room').on('value', snap => {
-                document.getElementById('stat-total-msg').innerHTML 
-= snap.numChildren().toLocaleString();
-            });
-            db.ref('users').on('value', snap => {
-                document.getElementById('stat-total-users').innerHTML 
-= snap.numChildren().toLocaleString();
-            });
-            db.ref('info_updates').on('value', snap => {
-                const data = snap.val();
-                document.getElementById('stat-total-updates').innerHTML 
-= data ? Object.keys(data).length : 0;
-            });
-            db.ref('pinned_messages').on('value', snap => {
-                const data = snap.val();
-                document.getElementById('stat-total-pinned').innerHTML 
-= data ? Object.keys(data).length : 0;
-            });
-        }
-
-        // ========== ROOM SETTINGS ==========
-        function loadRoomSettings() {
-            db.ref('settings').on('value', snap => {
-                const d = snap.val() || {};
-                document.getElementById('room-name-input').value 
-= d.roomName || 'FURAB ROOM';
-                document.getElementById('room-avatar-input').value 
-= d.roomAvatar || '';
-                document.getElementById('room-status-input').value 
-= d.roomStatus || 'NEURAL LINK ACTIVE';
-                document.getElementById('room-mute-input').value 
-= d.isMutedAll ? "true" : "false";
-                document.getElementById('ai-name-input').value 
-= d.aiName || 'FURAB AI';
-            });
-        }
-
-        function updateRoomIdentity() {
-            db.ref('settings').update({
-                roomName: 
-document.getElementById('room-name-input').value,
-                roomAvatar: 
-document.getElementById('room-avatar-input').value,
-                roomStatus: 
-document.getElementById('room-status-input').value,
-                aiName: 
-document.getElementById('ai-name-input').value
-            }).then(() => alert("✅ Room identity updated!"));
-        }
-
-        function updateRoomPrivacy() {
-            db.ref('settings').update({ 
-                isMutedAll: 
-document.getElementById('room-mute-input').value === "true" 
-            }).then(() => alert("✅ Privacy updated!"));
-        }
-
-        // ========== INFO UPDATE MANAGER ==========
-        function loadUpdates() {
-            db.ref('info_updates').on('value', snap => {
-                const container = 
-document.getElementById('update-list-container');
-                container.innerHTML = '';
-                const data = snap.val();
-                if (data) {
-                    Object.keys(data).reverse().forEach(id => 
+        if (snap.exists() && snap.val().password === password) 
 {
-                        const u = data[id];
-                        container.innerHTML += `
-                            <div class="update-card">
-                                <div 
-class="update-date">${u.date}</div>
-                                <div 
+            localStorage.setItem('furab_admin', username);
+            location.reload();
+        } else {
+            alert("Password salah!");
+        }
+    }
+
+    function adminLogout() {
+        localStorage.removeItem('furab_admin');
+        location.reload();
+    }
+
+    function switchTab(el, tabId) {
+        document.querySelectorAll('.nav-link').forEach(l => 
+l.classList.remove('active'));
+        if (el) el.classList.add('active');
+        document.querySelectorAll('.tab-section').forEach(s => 
+s.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    function loadDashboard() {
+        db.ref('settings').on('value', snap => {
+            const d = snap.val() || {};
+            document.getElementById('stat-room-status').innerHTML 
+= d.isMutedAll ? '🔒 MUTED' : '🔓 ACTIVE';
+            document.getElementById('stat-room-status').style.color 
+= d.isMutedAll ? 'var(--danger)' : 'var(--success)';
+        });
+        db.ref('messages_room').on('value', snap => {
+            document.getElementById('stat-total-msg').innerHTML 
+= snap.numChildren().toLocaleString();
+        });
+        db.ref('users').on('value', snap => {
+            document.getElementById('stat-total-users').innerHTML 
+= snap.numChildren().toLocaleString();
+        });
+        db.ref('info_updates').on('value', snap => {
+            const data = snap.val();
+            document.getElementById('stat-total-updates').innerHTML 
+= data ? Object.keys(data).length : 0;
+        });
+        db.ref('pinned_messages').on('value', snap => {
+            const data = snap.val();
+            document.getElementById('stat-total-pinned').innerHTML 
+= data ? Object.keys(data).length : 0;
+        });
+    }
+
+    function loadRoomSettings() {
+        db.ref('settings').on('value', snap => {
+            const d = snap.val() || {};
+            document.getElementById('room-name-input').value = 
+d.roomName || 'FURAB ROOM';
+            document.getElementById('room-avatar-input').value 
+= d.roomAvatar || '';
+            document.getElementById('room-status-input').value 
+= d.roomStatus || 'NEURAL LINK ACTIVE';
+            document.getElementById('room-mute-input').value = 
+d.isMutedAll ? "true" : "false";
+            document.getElementById('ai-name-input').value = 
+d.aiName || 'FURAB AI';
+        });
+    }
+
+    function updateRoomIdentity() {
+        db.ref('settings').update({
+            roomName: 
+document.getElementById('room-name-input').value,
+            roomAvatar: 
+document.getElementById('room-avatar-input').value,
+            roomStatus: 
+document.getElementById('room-status-input').value,
+            aiName: 
+document.getElementById('ai-name-input').value
+        }).then(() => alert("✅ Room identity updated!"));
+    }
+
+    function updateRoomPrivacy() {
+        db.ref('settings').update({ 
+            isMutedAll: 
+document.getElementById('room-mute-input').value === "true" 
+        }).then(() => alert("✅ Privacy updated!"));
+    }
+
+    function loadUpdates() {
+        db.ref('info_updates').on('value', snap => {
+            const container = 
+document.getElementById('update-list-container');
+            container.innerHTML = '';
+            const data = snap.val();
+            if (data) {
+                Object.keys(data).reverse().forEach(id => {
+                    const u = data[id];
+                    container.innerHTML += `
+                        <div class="update-card">
+                            <div 
+class="update-date">${escapeHtml(u.date)}</div>
+                            <div 
 class="update-title">${escapeHtml(u.title)}</div>
-                                <div 
+                            <div 
 class="update-desc">${escapeHtml(u.desc)}</div>
-                                <div class="update-actions">
-                                    <button 
+                            <div class="update-actions">
+                                <button 
 onclick="deleteUpdate('${id}')"><i class="fas fa-trash"></i></button>
-                                </div>
                             </div>
-                        `;
-                    });
-                } else {
-                    container.innerHTML = '<div 
-style="text-align: center; padding: 20px; color: var(--gray);">Belum ada update</div>';
-                }
-            });
-        }
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = '<div style="text-align: 
+center; padding: 20px; color: var(--gray);">Belum ada update</div>';
+            }
+        });
+    }
 
-        async function addUpdate() {
-            const date = 
+    async function addUpdate() {
+        const date = 
 document.getElementById('update-date').value;
-            const title = 
+        const title = 
 document.getElementById('update-title').value;
-            const desc = 
+        const desc = 
 document.getElementById('update-desc').value;
-            
-            if (!date || !title || !desc) {
-                alert("Semua field harus diisi!");
-                return;
-            }
-            
-            await db.ref('info_updates').push({
-                date: date,
-                title: title,
-                desc: desc,
-                ts: Date.now()
-            });
-            
-            alert("✅ Update added!");
-            document.getElementById('update-date').value = '';
-            document.getElementById('update-title').value = 
-'';
-            document.getElementById('update-desc').value = '';
+        if (!date || !title || !desc) {
+            alert("Semua field harus diisi!");
+            return;
         }
+        await db.ref('info_updates').push({ date, title, desc, 
+ts: Date.now() });
+        alert("✅ Update added!");
+        document.getElementById('update-date').value = '';
+        document.getElementById('update-title').value = '';
+        document.getElementById('update-desc').value = '';
+    }
 
-        function deleteUpdate(id) {
-            if (confirm("Hapus update ini?")) {
-                db.ref(`info_updates/${id}`).remove().then(() 
-=> alert("✅ Update deleted"));
-            }
-        }
+    function deleteUpdate(id) {
+        if (confirm("Hapus update ini?")) 
+db.ref(`info_updates/${id}`).remove().then(() => alert("✅ Update deleted"));
+    }
 
-        // ========== USER MANAGER ==========
-        function loadUsers() {
-            db.ref('users').on('value', snap => {
-                const tbody = 
+    function loadUsers() {
+        db.ref('users').on('value', snap => {
+            const tbody = 
 document.getElementById('user-list-table');
-                tbody.innerHTML = '';
-                const users = snap.val();
-                if (users) {
-                    Object.keys(users).forEach(u => {
-                        const data = users[u];
-                        const isOwner = u === 'rayy';
-                        const joinDate = data.joinDate ? 
+            tbody.innerHTML = '';
+            const users = snap.val();
+            if (users) {
+                Object.keys(users).forEach(u => {
+                    const data = users[u];
+                    const isOwner = u === 'rayy';
+                    const joinDate = data.joinDate ? 
 data.joinDate : '-';
-                        tbody.innerHTML += `
-                            <tr>
-                                <td><i class="fas fa-at" 
-style="color:var(--p-light)"></i> <strong>${u}</strong></td>
-                                <td><span class="badge 
-${isOwner ? 'badge-owner' : 'badge-member'}">${isOwner ? 'OWNER' : (data.level || 'MEMBER')}</span></td>
-                                <td>${data.verified ? '<span 
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><i class="fas fa-at" 
+style="color:var(--p-light)"></i> <strong>${u}</strong>${isOwner ? ' <span class="badge-owner">👑 OWNER</span>' : ''}${data.verified ? ' <span class="badge-verified">✅</span>' : ''} ${isOwner ? '' : ''} ${data.level || ''} </td>
+                            <td><span class="badge ${isOwner ? 
+'badge-owner' : 'badge-member'}">${isOwner ? 'OWNER' : (data.level || 'MEMBER')}</span></td>
+                            <td>${data.verified ? '<span 
 class="badge badge-verified">✅ VERIFIED</span>' : '<span class="badge">❌ NOT</span>'}</td>
-                                <td>${joinDate}</td>
-                                <td>
-                                    <i class="fas fa-key 
+                            <td>${joinDate}</td>
+                            <td>
+                                <i class="fas fa-key 
 action-icon" onclick="openPasswordModal('${u}')" title="Ganti Password"></i>
-                                    ${!isOwner ? `<i 
-class="fas fa-check-circle action-icon" onclick="toggleVerified('${u}', ${data.verified})" title="Verified"></i>` : ''}
-                                    ${!isOwner ? `<i 
-class="fas fa-trash action-icon danger" onclick="deleteUser('${u}')" title="Hapus"></i>` : ''}
-                                 </td>
-                            </tr>
-                        `;
-                    });
-                }
-            });
-        }
-function openPasswordModal(username) {
+                                ${!isOwner ? `<i class="fas 
+fa-check-circle action-icon" onclick="toggleVerified('${u}', ${data.verified})" title="Verified"></i>` : ''}
+                                ${!isOwner ? `<i class="fas 
+fa-trash action-icon danger" onclick="deleteUser('${u}')" title="Hapus"></i>` : ''}
+                            </td>
+                         </tr>
+                    `;
+                });
+            }
+        });
+    }
+        function openPasswordModal(username) {
             selectedUserForPassword = username;
             document.getElementById('modal-username').value = 
 username;
@@ -1043,7 +1020,6 @@ permanen?`)) {
             });
         }
 
-        // ========== STATUS STORY ==========
         function loadStatus() {
             db.ref('status_room').on('value', snap => {
                 const container = 
@@ -1091,7 +1067,6 @@ ts: Date.now() }).then(() => {
 db.ref(`status_room/${id}`).remove();
         }
 
-        // ========== PINNED MESSAGES MANAGER ==========
         function loadPinnedMessages() {
             db.ref('pinned_messages').on('value', snap => {
                 const container = 
@@ -1108,7 +1083,7 @@ document.getElementById('pinned-list-container-admin');
                                 <div class="update-title">📌 
 Pesan dari @${pin.user}</div>
                                 <div 
-class="update-desc">${escapeHtml(pin.text)}</div>
+class="update-desc">${escapeHtml(pin.fullText || pin.text)}</div>
                                 <div class="update-actions">
                                     <button 
 onclick="deletePinnedMessage('${user}')"><i class="fas fa-trash"></i> Hapus Pin</button>
@@ -1122,14 +1097,50 @@ style="text-align: center; padding: 20px; color: var(--gray);">Belum ada pesan t
                 }
             });
         }
-function deletePinnedMessage(user) {
+
+        function deletePinnedMessage(user) {
             if (confirm(`Hapus pin untuk user @${user}?`)) {
                 db.ref(`pinned_messages/${user}`).remove().then(() 
 => alert("✅ Pin dihapus!"));
             }
         }
 
-        // ========== BROADCAST ==========
+        async function sendGlobalPin() {
+            const text = 
+document.getElementById('global-pin-text').value;
+            if (!text) {
+                alert("Pesan global pin tidak boleh kosong!");
+                return;
+            }
+            const usersSnap = await 
+db.ref('users').once('value');
+            const users = usersSnap.val();
+            if (users) {
+                const pinData = {
+                    user: 'SYSTEM',
+                    text: text.substring(0, 150),
+                    fullText: text,
+                    time: new Date().toLocaleTimeString([], { 
+hour: '2-digit', minute: '2-digit' }),
+                    ts: Date.now(),
+                    isRoom: true,
+                    isGlobal: true
+                };
+                let count = 0;
+                for (let user in users) {
+                    await 
+db.ref(`pinned_messages/${user}`).set(pinData);
+                    count++;
+                }
+                alert(`✅ Global pin berhasil dikirim ke 
+${count} user!`);
+                document.getElementById('global-pin-text').value 
+= '';
+            } else {
+                alert("Tidak ada user terdaftar!");
+            }
+        }
+
         async function sendBroadcast(isTag) {
             const text = 
 document.getElementById('broadcast-text').value;
@@ -1145,7 +1156,6 @@ text: finalMsg, time, ts: Date.now() });
 '';
         }
 
-        // ========== SYSTEM ==========
         function backupDatabase() {
             db.ref().once('value', snap => {
                 const data = JSON.stringify(snap.val(), null, 
@@ -1189,7 +1199,6 @@ default?")) {
             }
         }
 
-        // ========== UTILITIES ==========
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -1197,7 +1206,6 @@ default?")) {
             return div.innerHTML;
         }
 
-        // ========== SYSTEM INFO ==========
         setInterval(() => {
             document.getElementById('system-info').innerHTML = 
 `
@@ -1221,7 +1229,6 @@ var(--success);">✅ CONNECTED</h3>
             `;
         }, 1000);
 
-        // ========== LOAD ALL DATA ==========
         function loadAllData() {
             loadRoomSettings();
             loadUpdates();
@@ -1231,11 +1238,9 @@ var(--success);">✅ CONNECTED</h3>
             loadDashboard();
         }
 
-        // ========== EVENT LISTENERS ==========
         document.getElementById('admin-login-btn').onclick = 
 adminLogin;
         
-        // Logout button
         const logoutBtn = document.createElement('div');
         logoutBtn.className = 'nav-link';
         logoutBtn.innerHTML = '<i class="fas 
@@ -1257,6 +1262,7 @@ fa-sign-out-alt"></i> <span>Logout</span>';
         window.updateRoomIdentity = updateRoomIdentity;
         window.updateRoomPrivacy = updateRoomPrivacy;
         window.sendBroadcast = sendBroadcast;
+        window.sendGlobalPin = sendGlobalPin;
         window.backupDatabase = backupDatabase;
         window.wipeData = wipeData;
         window.resetRoomSettings = resetRoomSettings;
