@@ -28,10 +28,9 @@ body {
     background: #020617;
     display: flex;
     justify-content: center;
-    height: 100vh;
+    min-height: 100dvh;
     width: 100vw;
     overflow: hidden;
-    position: fixed;
 }
 
 #auth-view {
@@ -89,7 +88,7 @@ body {
     display: none;
     flex-direction: column;
     background: var(--bg-chat);
-    height: 100vh;
+    height: 100dvh;
     position: relative;
     overflow: hidden;
 }
@@ -969,3 +968,4 @@ header {
         align-items: center;
     }
 }
+
