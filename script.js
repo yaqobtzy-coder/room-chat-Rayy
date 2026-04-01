@@ -993,105 +993,198 @@ function boot() {
 // Music Feature & Event Listeners
 // ========================================
 
-// ========== MUSIC API CONFIG ==========
-const API_CONFIG = {
-    botcahx: {
-        baseUrl: "https://api.botcahx.eu.org",
-        apikey: "alipabotcahx2026",
-        endpoints: { search: "/api/search/youtube", download: "/api/download/ytmp3" }
-    },
-    yudz: {
-        baseUrl: "https://api.yydz.biz.id",
-        apikey: "alipaixyudz",
-        endpoints: { play: "/api/playmusic" }
-    },
-    fgsi: {
-        baseUrl: "https://fgsi.dpdns.org",
-        apikey: "RahmadXElaina",
-        endpoints: { play: "/api/audio/play" }
-    },
-    alip: {
-        baseUrl: "https://docs-alip.clutch.web.id",
-        apikey: "alipaiapikeybaru",
-        endpoints: { play: "/api/music/play" }
-    },
-    termai: {
-        baseUrl: "https://api.termai.cc",
-        apikey: "alipaitermai2026",
-        endpoints: { play: "/api/play" }
-    },
-    pitu: {
-        baseUrl: "https://api.pitucode.com",
-        apikey: "alipaipitu2026",
-        endpoints: { play: "/api/music" }
-    }
-};
-
 let currentAudio = null;
 let currentSong = null;
 let isPlaying = false;
 
-// ========== MUSIC FUNCTIONS ==========
-async function searchMusicAll(query) {
-    const results = [];
-    
-    for (const [source, config] of Object.entries(API_CONFIG)) {
-        try {
-            let res, data;
-            if (source === 'botcahx') {
-                res = await fetch(`${config.baseUrl}${config.endpoints.search}?query=${encodeURIComponent(query)}&apikey=${config.apikey}`);
-                data = await res.json();
-                if (data.result && data.result.length > 0) {
-                    results.push({
-                        source: "Botcahx",
-                        title: data.result[0].title,
-                        artist: data.result[0].channel,
-                        duration: data.result[0].duration,
-                        thumbnail: data.result[0].thumbnail,
-                        videoUrl: data.result[0].url,
-                        api: "botcahx"
-                    });
-                }
-            } else {
-                res = await fetch(`${config.baseUrl}${config.endpoints.play}?query=${encodeURIComponent(query)}&apikey=${config.apikey}`);
-                data = await res.json();
-                if (data.result && (data.result.url || data.result.audio)) {
-                    results.push({
-                        source: source.charAt(0).toUpperCase() + source.slice(1),
-                        title: data.result.title || query,
-                        artist: data.result.artist || "Unknown",
-                        duration: data.result.duration || "Unknown",
-                        thumbnail: data.result.thumbnail,
-                        audioUrl: data.result.url || data.result.audio,
-                        api: source
-                    });
-                }
-            }
-        } catch(e) { console.log(`${source} error:`, e); }
+async function searchYouTube(query) {
+    try {
+        const response = await fetch(`https://api.botcahx.eu.org/api/search/youtube?query=${encodeURIComponent(query)}&apikey=alipabotcahx2026`);
+        const data = await response.json();
+        
+        if (data.result && data.result.length > 0) {
+            return data.result.slice(0, 10).map(video => ({
+                title: video.title,
+                artist: video.channel || "Unknown",
+                duration: video.duration || "Unknown",
+                thumbnail: video.thumbnail,
+                videoId: video.videoId,
+                videoUrl: video.url
+            }));
+        }
+        return [];
+    } catch(e) {
+        console.log("Search error:", e);
+        return [];
     }
-    return results;
+}
+
+async function getAudioUrl(videoUrl) {
+    try {
+        const res1 = await fetch(`https://api.botcahx.eu.org/api/download/ytmp3?url=${encodeURIComponent(videoUrl)}&apikey=alipabotcahx2026`);
+        const data1 = await res1.json();
+        if (data1.result && data1.result.url) return data1.result.url;
+        
+        const res2 = await fetch(`https://api.yydz.biz.id/api/playmusic?query=${encodeURIComponent(videoUrl)}&apikey=alipaixyudz`);
+        const data2 = await res2.json();
+        if (data2.result && data2.result.url) return data2.result.url;
+        
+        const res3 = await fetch(`https://fgsi.dpdns.org/api/audio/play?apikey=RahmadXElaina&query=${encodeURIComponent(videoUrl)}`);
+        const data3 = await res3.json();
+        if (data3.result && data3.result.audio) return data3.result.audio;
+        
+        return null;
+    } catch(e) {
+        console.log("Audio error:", e);
+        return null;
+    }
+}
+
+async function searchAndDisplayMusic() {
+    const query = document.getElementById('music-search-input').value.trim();
+    if (!query) {
+        alert("Masukkan judul lagu!");
+        return;
+    }
+    
+    const container = document.getElementById('music-results-list');
+    container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Mencari lagu...</div>';
+    
+    try {
+        const songs = await searchYouTube(query);
+        
+        if (songs.length === 0) {
+            container.innerHTML = `
+                <div class="no-results">
+                    ❌ Lagu "${escapeHtml(query)}" tidak ditemukan<br>
+                    <small>Coba dengan judul yang berbeda</small>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = songs.map((song, idx) => `
+            <div class="music-result-item" onclick="playSongByIndex(${idx})">
+                <div class="music-result-thumb">
+                    <img src="${song.thumbnail}" onerror="this.src='https://via.placeholder.com/50'">
+                </div>
+                <div class="music-result-info">
+                    <div class="music-result-title">${escapeHtml(song.title)}</div>
+                    <div class="music-result-artist">${escapeHtml(song.artist)} • ${song.duration}</div>
+                </div>
+                <button class="music-result-play" onclick="event.stopPropagation(); playSongByIndex(${idx})">
+                    <i class="fas fa-play"></i>
+                </button>
+            </div>
+        `).join('');
+        
+        window.currentSongs = songs;
+        
+    } catch(e) {
+        console.log("Error:", e);
+        container.innerHTML = `<div class="no-results">❌ Error: ${e.message}</div>`;
+    }
+}
+
+async function playSongByIndex(index) {
+    const songs = window.currentSongs;
+    if (!songs || !songs[index]) return;
+    
+    const song = songs[index];
+    const container = document.getElementById('music-results-list');
+    const originalContent = container.innerHTML;
+    container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Memuat audio...</div>';
+    
+    try {
+        const audioUrl = await getAudioUrl(song.videoUrl);
+        
+        if (audioUrl) {
+            playMusic(audioUrl, song);
+            document.getElementById('music-search-modal').style.display = 'none';
+        } else {
+            throw new Error("Gagal mendapatkan audio");
+        }
+    } catch(e) {
+        console.log("Play error:", e);
+        alert("Gagal memutar lagu: " + e.message);
+        container.innerHTML = originalContent;
+    }
 }
 
 function playMusic(audioUrl, songData) {
     try {
-        if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+        
         currentAudio = new Audio(audioUrl);
         currentAudio.volume = 0.5;
-        currentAudio.play();
+        
+        const playPromise = currentAudio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(e => {
+                console.log("Autoplay blocked:", e);
+                showMusicPlayer();
+                updateMusicPlayerUI(songData);
+                updatePlayButtonUI(false);
+                alert("Browser memblokir autoplay. Klik tombol play di player.");
+            });
+        }
+        
         isPlaying = true;
         currentSong = songData;
+        showMusicPlayer();
         updateMusicPlayerUI(songData);
-        currentAudio.addEventListener('ended', () => { isPlaying = false; updatePlayButtonUI(false); });
+        
+        currentAudio.addEventListener('ended', () => {
+            isPlaying = false;
+            updatePlayButtonUI(false);
+        });
+        
+        currentAudio.addEventListener('error', () => {
+            alert("Error memutar lagu");
+            stopMusic();
+        });
+        
         return true;
-    } catch(e) { console.log("Play error:", e); return false; }
+    } catch(e) {
+        console.log("Play error:", e);
+        alert("Gagal memutar lagu");
+        return false;
+    }
 }
 
-function pauseMusic() { if (currentAudio) { currentAudio.pause(); isPlaying = false; updatePlayButtonUI(false); } }
-function resumeMusic() { if (currentAudio) { currentAudio.play(); isPlaying = true; updatePlayButtonUI(true); } }
-function stopMusic() { if (currentAudio) { currentAudio.pause(); currentAudio = null; isPlaying = false; currentSong = null; hideMusicPlayer(); } }
-function setVolume(value) { if (currentAudio) currentAudio.volume = value / 100; }
+function pauseMusic() {
+    if (currentAudio) {
+        currentAudio.pause();
+        isPlaying = false;
+        updatePlayButtonUI(false);
+    }
+}
 
-// ========== MUSIC UI ==========
+function resumeMusic() {
+    if (currentAudio) {
+        currentAudio.play();
+        isPlaying = true;
+        updatePlayButtonUI(true);
+    }
+}
+
+function stopMusic() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+        isPlaying = false;
+        currentSong = null;
+        hideMusicPlayer();
+    }
+}
+
+function setVolume(value) {
+    if (currentAudio) currentAudio.volume = value / 100;
+}
+
 function showMusicPlayer() {
     let player = document.getElementById('music-player');
     if (!player) {
@@ -1100,21 +1193,36 @@ function showMusicPlayer() {
         player.className = 'music-player';
         player.innerHTML = `
             <div class="music-player-content">
-                <div class="music-info"><img id="music-thumb" src=""><div class="music-details"><div id="music-title">-</div><div id="music-artist">-</div></div></div>
+                <div class="music-info">
+                    <img id="music-thumb" src="">
+                    <div class="music-details">
+                        <div id="music-title">-</div>
+                        <div id="music-artist">-</div>
+                    </div>
+                </div>
                 <div class="music-controls">
-                    <button id="music-prev" class="music-btn"><i class="fas fa-backward"></i></button>
                     <button id="music-playpause" class="music-btn play-btn"><i class="fas fa-play"></i></button>
-                    <button id="music-next" class="music-btn"><i class="fas fa-forward"></i></button>
                     <button id="music-stop" class="music-btn"><i class="fas fa-stop"></i></button>
                 </div>
-                <div class="music-volume"><i class="fas fa-volume-down"></i><input type="range" id="music-volume" min="0" max="100" value="50"><i class="fas fa-volume-up"></i></div>
+                <div class="music-volume">
+                    <i class="fas fa-volume-down"></i>
+                    <input type="range" id="music-volume" min="0" max="100" value="50">
+                    <i class="fas fa-volume-up"></i>
+                </div>
                 <button id="music-close" class="music-close"><i class="fas fa-times"></i></button>
             </div>
         `;
         document.body.appendChild(player);
-        document.getElementById('music-playpause').onclick = () => { if (isPlaying) pauseMusic(); else if (currentAudio) resumeMusic(); };
+        
+        document.getElementById('music-playpause').onclick = () => {
+            if (isPlaying) pauseMusic();
+            else if (currentAudio) resumeMusic();
+        };
         document.getElementById('music-stop').onclick = stopMusic;
-        document.getElementById('music-close').onclick = () => { stopMusic(); player.style.display = 'none'; };
+        document.getElementById('music-close').onclick = () => {
+            stopMusic();
+            player.style.display = 'none';
+        };
         document.getElementById('music-volume').oninput = (e) => setVolume(e.target.value);
     }
     player.style.display = 'flex';
@@ -1146,109 +1254,91 @@ function showMusicSearchModal() {
         modal.className = 'music-modal';
         modal.innerHTML = `
             <div class="music-modal-content">
-                <div class="music-modal-header"><h3><i class="fas fa-music"></i> Cari & Putar Lagu</h3><button id="close-music-modal"><i class="fas fa-times"></i></button></div>
+                <div class="music-modal-header">
+                    <h3><i class="fas fa-music"></i> Cari & Putar Lagu</h3>
+                    <button id="close-music-modal"><i class="fas fa-times"></i></button>
+                </div>
                 <div class="music-modal-body">
-                    <div class="music-search-bar"><input type="text" id="music-search-input" placeholder="Cari lagu..."><button id="music-search-btn"><i class="fas fa-search"></i> Cari</button></div>
-                    <div id="music-results-list" class="music-results-list"><div class="loading">Cari lagu untuk mulai...</div></div>
+                    <div class="music-search-bar">
+                        <input type="text" id="music-search-input" placeholder="Cari lagu... (contoh: Sekuat Hatimu)">
+                        <button id="music-search-btn"><i class="fas fa-search"></i> Cari</button>
+                    </div>
+                    <div id="music-results-list" class="music-results-list">
+                        <div class="loading">Masukkan judul lagu untuk mencari...</div>
+                    </div>
                 </div>
             </div>
         `;
         document.body.appendChild(modal);
+        
         document.getElementById('close-music-modal').onclick = () => modal.style.display = 'none';
-        document.getElementById('music-search-btn').onclick = () => { const q = document.getElementById('music-search-input').value; if (q) searchAndDisplayResults(q); };
-        document.getElementById('music-search-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { const q = e.target.value; if (q) searchAndDisplayResults(q); } });
+        document.getElementById('music-search-btn').onclick = searchAndDisplayMusic;
+        document.getElementById('music-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchAndDisplayMusic();
+        });
     }
     modal.style.display = 'flex';
 }
 
-async function searchAndDisplayResults(query) {
-    const container = document.getElementById('music-results-list');
-    container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
-    const results = await searchMusicAll(query);
-    if (results.length === 0) { container.innerHTML = '<div class="no-results">❌ Lagu tidak ditemukan</div>'; return; }
-    container.innerHTML = results.map((song, idx) => `
-        <div class="music-result-item" onclick="playSongFromResult(${idx})">
-            <div class="music-result-thumb"><img src="${song.thumbnail || 'https://via.placeholder.com/50'}"></div>
-            <div class="music-result-info"><div class="music-result-title">${escapeHtml(song.title)}</div><div class="music-result-artist">${escapeHtml(song.artist)} • ${song.duration} • ${song.source}</div></div>
-            <button class="music-result-play"><i class="fas fa-play"></i></button>
-        </div>
-    `).join('');
-    window.playSongFromResult = function(idx) {
-        const song = results[idx];
-        if (song.audioUrl) playMusic(song.audioUrl, song);
-        else if (song.videoUrl) getAudioFromVideo(song.videoUrl, song);
-        else alert("URL audio tidak tersedia");
-        document.getElementById('music-search-modal').style.display = 'none';
-    };
-}
-
-async function getAudioFromVideo(videoUrl, songData) {
-    try {
-        const res = await fetch(`${API_CONFIG.botcahx.baseUrl}${API_CONFIG.botcahx.endpoints.download}?url=${encodeURIComponent(videoUrl)}&apikey=${API_CONFIG.botcahx.apikey}`);
-        const data = await res.json();
-        if (data.result && data.result.url) playMusic(data.result.url, { ...songData, audioUrl: data.result.url });
-        else alert("Gagal mendapatkan audio");
-    } catch(e) { alert("Error: " + e.message); }
-}
-
 function addMusicButton() {
-    // Cari tombol musik yang sudah ada di HTML
     const musicBtn = document.getElementById('music-toggle-btn');
     if (musicBtn) {
         musicBtn.onclick = showMusicSearchModal;
     } else {
-        // Backup: buat tombol jika tidak ada
         const headerRight = document.querySelector('.header-right');
-        if (headerRight && !document.getElementById('music-toggle-btn')) {
+        if (headerRight) {
             const btn = document.createElement('button');
             btn.id = 'music-toggle-btn';
             btn.innerHTML = '<i class="fas fa-music"></i>';
             btn.title = 'Cari & Putar Lagu';
+            btn.style.background = 'none';
+            btn.style.border = 'none';
+            btn.style.color = 'var(--gray)';
+            btn.style.fontSize = '20px';
+            btn.style.cursor = 'pointer';
             btn.onclick = showMusicSearchModal;
             headerRight.insertBefore(btn, document.getElementById('member-list-btn'));
         }
     }
-    
-    // CSS untuk musik
-    const style = document.createElement('style');
-    style.textContent = `
-        .music-player { position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 500px; background: var(--bg-header); border-radius: 20px; padding: 12px 16px; display: none; align-items: center; z-index: 10001; border: 1px solid var(--border); }
-        .music-player-content { display: flex; align-items: center; gap: 12px; width: 100%; flex-wrap: wrap; }
-        .music-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 150px; }
-        .music-info img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
-        .music-details { flex: 1; }
-        .music-details #music-title { font-size: 12px; font-weight: 700; color: white; }
-        .music-details #music-artist { font-size: 10px; color: var(--gray); }
-        .music-controls { display: flex; gap: 8px; }
-        .music-btn { background: var(--p); border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .play-btn { background: var(--success); }
-        .music-volume { display: flex; align-items: center; gap: 8px; }
-        .music-volume input { width: 80px; }
-        .music-close { background: none; border: none; color: var(--gray); cursor: pointer; }
-        .music-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 20000; align-items: center; justify-content: center; }
-        .music-modal-content { background: var(--bg-header); border-radius: 28px; width: 90%; max-width: 450px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; }
-        .music-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--border); }
-        .music-modal-header h3 { color: white; }
-        .music-modal-header button { background: none; border: none; color: var(--gray); font-size: 20px; cursor: pointer; }
-        .music-modal-body { padding: 20px; overflow-y: auto; }
-        .music-search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-        .music-search-bar input { flex: 1; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 28px; color: white; outline: none; }
-        .music-search-bar button { padding: 12px 20px; background: var(--p); border: none; border-radius: 28px; color: white; cursor: pointer; }
-        .music-results-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
-        .music-result-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 16px; cursor: pointer; }
-        .music-result-item:hover { background: rgba(142,68,173,0.3); }
-        .music-result-thumb img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
-        .music-result-info { flex: 1; }
-        .music-result-title { font-weight: 600; font-size: 14px; color: white; }
-        .music-result-artist { font-size: 11px; color: var(--gray); }
-        .music-result-play { background: var(--p); border: none; width: 36px; height: 36px; border-radius: 50%; color: white; cursor: pointer; }
-        .no-results, .loading { text-align: center; padding: 40px; color: var(--gray); }
-        @media (max-width: 550px) { .music-player-content { flex-direction: column; align-items: stretch; } .music-volume { justify-content: center; } }
-    `;
-    document.head.appendChild(style);
 }
 
-// ========== EVENT LISTENERS ==========
+const musicStyle = document.createElement('style');
+musicStyle.textContent = `
+    .music-player { position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 500px; background: var(--bg-header); border-radius: 20px; padding: 12px 16px; display: none; align-items: center; z-index: 10001; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .music-player-content { display: flex; align-items: center; gap: 12px; width: 100%; flex-wrap: wrap; }
+    .music-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 150px; }
+    .music-info img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+    .music-details { flex: 1; }
+    .music-details #music-title { font-size: 12px; font-weight: 700; color: white; }
+    .music-details #music-artist { font-size: 10px; color: var(--gray); }
+    .music-controls { display: flex; gap: 8px; }
+    .music-btn { background: var(--p); border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .play-btn { background: var(--success); }
+    .music-volume { display: flex; align-items: center; gap: 8px; }
+    .music-volume input { width: 80px; }
+    .music-close { background: none; border: none; color: var(--gray); cursor: pointer; font-size: 16px; }
+    .music-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 20000; align-items: center; justify-content: center; }
+    .music-modal-content { background: var(--bg-header); border-radius: 28px; width: 90%; max-width: 450px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; }
+    .music-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .music-modal-header h3 { color: white; font-size: 18px; }
+    .music-modal-header button { background: none; border: none; color: var(--gray); font-size: 20px; cursor: pointer; }
+    .music-modal-body { padding: 20px; overflow-y: auto; }
+    .music-search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+    .music-search-bar input { flex: 1; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 28px; color: white; outline: none; font-size: 14px; }
+    .music-search-bar button { padding: 12px 20px; background: var(--p); border: none; border-radius: 28px; color: white; cursor: pointer; font-weight: 600; }
+    .music-results-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+    .music-result-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 16px; cursor: pointer; transition: 0.2s; }
+    .music-result-item:hover { background: rgba(142,68,173,0.3); }
+    .music-result-thumb img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+    .music-result-info { flex: 1; }
+    .music-result-title { font-weight: 600; font-size: 14px; color: white; }
+    .music-result-artist { font-size: 11px; color: var(--gray); }
+    .music-result-play { background: var(--p); border: none; width: 36px; height: 36px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .no-results, .loading { text-align: center; padding: 40px; color: var(--gray); }
+    @media (max-width: 550px) { .music-player-content { flex-direction: column; align-items: stretch; } .music-volume { justify-content: center; } .music-info { min-width: auto; } }
+`;
+document.head.appendChild(musicStyle);
+
 document.getElementById('login-btn').onclick = handleLogin;
 document.getElementById('register-btn').onclick = handleRegister;
 document.getElementById('logout-btn').onclick = logout;
@@ -1276,7 +1366,6 @@ document.getElementById('email-contact').onclick = (e) => { e.preventDefault(); 
 document.getElementById('instagram-contact').onclick = (e) => { e.preventDefault(); alert('📱 @rayy_official'); };
 document.getElementById('telegram-contact').onclick = (e) => { e.preventDefault(); alert('💬 @rayy'); };
 
-// Global functions
 window.pinMessage = pinMessage;
 window.unpinMessage = unpinMessage;
 window.replyToMessage = replyToMessage;
@@ -1293,8 +1382,8 @@ window.playMusic = playMusic;
 window.pauseMusic = pauseMusic;
 window.resumeMusic = resumeMusic;
 window.stopMusic = stopMusic;
+window.searchAndDisplayMusic = searchAndDisplayMusic;
 
-// CSS for popup
 const stylePopup = document.createElement('style');
 stylePopup.textContent = `
     .user-list-popup {
