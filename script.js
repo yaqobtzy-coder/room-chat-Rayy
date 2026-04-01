@@ -1,5 +1,5 @@
 // ========================================
-// FURAB V14 - FULL LOGIC - PART 1/5
+// FURAB V14 - FULL LOGIC - PART 1/6
 // Initialization, Auth, Encryption, Story, Member List
 // ========================================
 
@@ -232,7 +232,7 @@ function closeMemberModal() {
     document.getElementById('member-modal').style.display = 'none';
 }
 // ========================================
-// FURAB V14 - FULL LOGIC - PART 2/5
+// FURAB V14 - FULL LOGIC - PART 2/6
 // Pin Message, Sidebar, Unread Messages
 // ========================================
 
@@ -438,7 +438,7 @@ function switchTab(tab) {
     }
 }
 // ========================================
-// FURAB V14 - FULL LOGIC - PART 3/5
+// FURAB V14 - FULL LOGIC - PART 3/6
 // Private Chat, Room Chat, Reply, Tag
 // ========================================
 
@@ -740,7 +740,7 @@ function insertTag(tag) {
     if (popup) popup.style.display = 'none';
 }
 // ========================================
-// FURAB V14 - FULL LOGIC - PART 4/5
+// FURAB V14 - FULL LOGIC - PART 4/6
 // Notification, AI, Settings, Boot
 // ========================================
 
@@ -970,9 +970,8 @@ function boot() {
     }
 }
 // ========================================
-// FURAB V14 - FULL LOGIC - PART 5/5 (FINAL)
-// Music Feature - Play Music Directly (Working API)
-// Event Listeners & checkAuth()
+// FURAB V14 - FULL LOGIC - PART 5/6
+// Music Feature - Working API + Floating Player
 // ========================================
 
 let currentAudio = null;
@@ -1004,6 +1003,70 @@ async function searchMusicAPI(query) {
     }
 }
 
+// ========== FLOATING MUSIC PLAYER ==========
+function showFloatingPlayer(songData) {
+    let player = document.getElementById('floating-music-player');
+    if (!player) {
+        player = document.createElement('div');
+        player.id = 'floating-music-player';
+        player.className = 'floating-music-player';
+        player.innerHTML = `
+            <div class="floating-player-content">
+                <div class="floating-player-info">
+                    <img id="floating-thumb" src="" alt="thumb">
+                    <div class="floating-player-details">
+                        <div id="floating-title">-</div>
+                        <div id="floating-artist">-</div>
+                    </div>
+                </div>
+                <div class="floating-player-controls">
+                    <button id="floating-playpause" class="floating-btn"><i class="fas fa-play"></i></button>
+                    <button id="floating-stop" class="floating-btn"><i class="fas fa-stop"></i></button>
+                    <button id="floating-close" class="floating-btn close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="floating-volume">
+                    <i class="fas fa-volume-down"></i>
+                    <input type="range" id="floating-volume" min="0" max="100" value="50">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(player);
+        
+        document.getElementById('floating-playpause').onclick = () => {
+            if (isPlaying) {
+                pauseMusic();
+                document.getElementById('floating-playpause').innerHTML = '<i class="fas fa-play"></i>';
+            } else if (currentAudio) {
+                resumeMusic();
+                document.getElementById('floating-playpause').innerHTML = '<i class="fas fa-pause"></i>';
+            }
+        };
+        document.getElementById('floating-stop').onclick = () => {
+            stopMusic();
+            hideFloatingPlayer();
+        };
+        document.getElementById('floating-close').onclick = () => {
+            stopMusic();
+            hideFloatingPlayer();
+        };
+        document.getElementById('floating-volume').oninput = (e) => {
+            if (currentAudio) currentAudio.volume = e.target.value / 100;
+        };
+    }
+    
+    document.getElementById('floating-thumb').src = songData.thumbnail || 'https://via.placeholder.com/40';
+    document.getElementById('floating-title').innerText = songData.title;
+    document.getElementById('floating-artist').innerText = songData.artist;
+    document.getElementById('floating-playpause').innerHTML = '<i class="fas fa-pause"></i>';
+    player.style.display = 'block';
+}
+
+function hideFloatingPlayer() {
+    const player = document.getElementById('floating-music-player');
+    if (player) player.style.display = 'none';
+}
+
 // ========== MUSIC SEARCH MODAL ==========
 function showMusicSearchModal() {
     let modal = document.getElementById('music-search-modal');
@@ -1030,7 +1093,7 @@ function showMusicSearchModal() {
                     </div>
                     <div id="music-results-list" class="music-results-list"></div>
                     <div class="music-note">
-                        <i class="fas fa-info-circle"></i> Putar lagu langsung di web, tanpa buka tab baru!
+                        <i class="fas fa-info-circle"></i> Lagu akan tetap muter di latar belakang meskipun modal ditutup.
                     </div>
                 </div>
             </div>
@@ -1038,7 +1101,6 @@ function showMusicSearchModal() {
         document.body.appendChild(modal);
         
         document.getElementById('close-music-modal').onclick = () => {
-            stopMusic();
             modal.style.display = 'none';
         };
         document.getElementById('music-search-btn').onclick = searchAndPlayMusic;
@@ -1075,7 +1137,6 @@ async function searchAndPlayMusic() {
         return;
     }
     
-    // Tampilkan hasil
     container.innerHTML = `
         <div class="music-song-card">
             <img class="music-thumb" src="${song.thumbnail}" onerror="this.src='https://via.placeholder.com/200'">
@@ -1088,16 +1149,11 @@ async function searchAndPlayMusic() {
             <div class="music-controls-panel">
                 <button id="music-play-btn" class="music-control-btn play"><i class="fas fa-play"></i> Putar</button>
                 <button id="music-stop-btn" class="music-control-btn stop"><i class="fas fa-stop"></i> Stop</button>
-                <div class="music-volume-slider">
-                    <i class="fas fa-volume-down"></i>
-                    <input type="range" id="music-volume-range" min="0" max="100" value="50">
-                    <i class="fas fa-volume-up"></i>
-                </div>
+                <button id="music-background-btn" class="music-control-btn bg"><i class="fas fa-window-restore"></i> Background</button>
             </div>
         </div>
     `;
     
-    // Tambahkan info ke results
     resultsContainer.innerHTML = `
         <div class="music-info-card">
             <div class="music-info-title">🎵 ${escapeHtml(song.title)}</div>
@@ -1109,19 +1165,22 @@ async function searchAndPlayMusic() {
         </div>
     `;
     
-    // Event listeners untuk player
     const playBtn = document.getElementById('music-play-btn');
     const stopBtn = document.getElementById('music-stop-btn');
-    const volumeSlider = document.getElementById('music-volume-range');
+    const bgBtn = document.getElementById('music-background-btn');
     
     playBtn.onclick = () => {
         if (currentAudio && currentSong === song) {
             if (isPlaying) {
                 pauseMusic();
                 playBtn.innerHTML = '<i class="fas fa-play"></i> Putar';
+                const floatBtn = document.getElementById('floating-playpause');
+                if (floatBtn) floatBtn.innerHTML = '<i class="fas fa-play"></i>';
             } else {
                 resumeMusic();
                 playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                const floatBtn = document.getElementById('floating-playpause');
+                if (floatBtn) floatBtn.innerHTML = '<i class="fas fa-pause"></i>';
             }
         } else {
             playMusic(song.audioUrl, song);
@@ -1134,8 +1193,18 @@ async function searchAndPlayMusic() {
         playBtn.innerHTML = '<i class="fas fa-play"></i> Putar';
     };
     
-    volumeSlider.oninput = (e) => {
-        if (currentAudio) currentAudio.volume = e.target.value / 100;
+    bgBtn.onclick = () => {
+        if (currentAudio && currentSong === song && isPlaying) {
+            showFloatingPlayer(song);
+        } else if (currentSong !== song) {
+            playMusic(song.audioUrl, song);
+            showFloatingPlayer(song);
+            playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+        } else if (currentSong === song && !isPlaying) {
+            resumeMusic();
+            showFloatingPlayer(song);
+            playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+        }
     };
     
     window.currentSongData = song;
@@ -1149,23 +1218,26 @@ function playMusic(audioUrl, songData) {
         }
         
         currentAudio = new Audio(audioUrl);
-        currentAudio.volume = document.getElementById('music-volume-range')?.value / 100 || 0.5;
+        const volumeVal = document.getElementById('floating-volume')?.value || 50;
+        currentAudio.volume = volumeVal / 100;
         
         const playPromise = currentAudio.play();
         if (playPromise !== undefined) {
             playPromise.catch(e => {
                 console.log("Autoplay blocked:", e);
-                alert("Klik play untuk memutar lagu");
             });
         }
         
         isPlaying = true;
         currentSong = songData;
+        showFloatingPlayer(songData);
         
         currentAudio.addEventListener('ended', () => {
             isPlaying = false;
             const playBtn = document.getElementById('music-play-btn');
             if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i> Putar';
+            const floatBtn = document.getElementById('floating-playpause');
+            if (floatBtn) floatBtn.innerHTML = '<i class="fas fa-play"></i>';
         });
         
         currentAudio.addEventListener('error', () => {
@@ -1202,6 +1274,7 @@ function stopMusic() {
         isPlaying = false;
         currentSong = null;
     }
+    hideFloatingPlayer();
     const playBtn = document.getElementById('music-play-btn');
     if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i> Putar';
 }
@@ -1237,6 +1310,10 @@ function addMusicButton() {
         headerRight.appendChild(musicBtn);
     }
 }
+// ========================================
+// FURAB V14 - FULL LOGIC - PART 6/6
+// CSS Styles, Event Listeners, checkAuth()
+// ========================================
 
 const musicStyle = document.createElement('style');
 musicStyle.textContent = `
@@ -1376,16 +1453,9 @@ musicStyle.textContent = `
         background: var(--danger);
         color: white;
     }
-    .music-volume-slider {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(0,0,0,0.3);
-        padding: 5px 12px;
-        border-radius: 30px;
-    }
-    .music-volume-slider input {
-        width: 80px;
+    .music-control-btn.bg {
+        background: var(--p);
+        color: white;
     }
     .music-results-list {
         border-top: 1px solid var(--border);
@@ -1433,6 +1503,78 @@ musicStyle.textContent = `
         padding: 40px;
         color: var(--gray);
     }
+    .floating-music-player {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        left: auto;
+        background: var(--bg-header);
+        border-radius: 60px;
+        padding: 8px 16px;
+        display: none;
+        z-index: 10001;
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        backdrop-filter: blur(10px);
+        min-width: 280px;
+    }
+    .floating-player-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .floating-player-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+    }
+    .floating-player-info img {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+    .floating-player-details {
+        flex: 1;
+    }
+    .floating-player-details #floating-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: white;
+    }
+    .floating-player-details #floating-artist {
+        font-size: 10px;
+        color: var(--gray);
+    }
+    .floating-player-controls {
+        display: flex;
+        gap: 8px;
+    }
+    .floating-btn {
+        background: var(--p);
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .floating-btn.close {
+        background: var(--danger);
+    }
+    .floating-volume {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .floating-volume input {
+        width: 60px;
+    }
     @media (max-width: 550px) {
         .music-modal-content {
             width: 95%;
@@ -1440,8 +1582,16 @@ musicStyle.textContent = `
         .music-controls-panel {
             flex-direction: column;
         }
-        .music-volume-slider {
-            width: 100%;
+        .floating-music-player {
+            left: 10px;
+            right: 10px;
+            border-radius: 20px;
+        }
+        .floating-player-content {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .floating-volume {
             justify-content: center;
         }
     }
@@ -1455,6 +1605,8 @@ window.playMusic = playMusic;
 window.pauseMusic = pauseMusic;
 window.resumeMusic = resumeMusic;
 window.stopMusic = stopMusic;
+window.showFloatingPlayer = showFloatingPlayer;
+window.hideFloatingPlayer = hideFloatingPlayer;
 
 // ========== EVENT LISTENERS ==========
 document.getElementById('login-btn').onclick = handleLogin;
