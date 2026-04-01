@@ -1,5 +1,6 @@
 // ========================================
-// FURAB V14 - FULL LOGIC
+// FURAB V14 - FULL LOGIC - PART 1/5
+// Initialization, Auth, Encryption, Story
 // ========================================
 
 const firebaseConfig = { databaseURL: "https://rayy-all-web-default-rtdb.asia-southeast1.firebasedatabase.app" };
@@ -19,6 +20,7 @@ let activeStatus = [];
 let statusIdx = 0;
 let statusTimer;
 
+// Encryption
 function encryptMessage(text, key) {
     let result = '';
     for (let i = 0; i < text.length; i++) {
@@ -47,6 +49,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ========== AUTH ==========
 function checkAuth() {
     currentUser = localStorage.getItem('furab_user');
     if (currentUser) {
@@ -129,6 +132,7 @@ function closeWelcomeModal() {
     document.getElementById('welcome-modal').style.display = 'none';
 }
 
+// ========== STORY ==========
 function loadStory() {
     db.ref('status_room').on('value', snap => {
         activeStatus = [];
@@ -195,6 +199,7 @@ function closeStory() {
     clearTimeout(statusTimer);
 }
 
+// ========== MEMBER LIST ==========
 function openMemberModal() {
     const container = document.getElementById('member-list-container');
     container.innerHTML = '<div class="loading">Loading members...</div>';
@@ -230,7 +235,12 @@ function openMemberModal() {
 function closeMemberModal() {
     document.getElementById('member-modal').style.display = 'none';
 }
+// ========================================
+// FURAB V14 - FULL LOGIC - PART 2/5
+// Pin Message, Sidebar, Unread Messages
+// ========================================
 
+// ========== PIN MESSAGE ==========
 async function pinMessage(messageId, messageData, isRoom = true) {
     const pinData = {
         messageId: messageId,
@@ -301,6 +311,7 @@ function closePinnedModal() {
     document.getElementById('pinned-modal').style.display = 'none';
 }
 
+// ========== SIDEBAR ==========
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar-menu');
     if (sidebar) {
@@ -308,6 +319,7 @@ function toggleSidebar() {
     }
 }
 
+// ========== MODALS ==========
 function openInfoModal() {
     toggleSidebar();
     loadUpdatesToModal();
@@ -351,6 +363,7 @@ function loadUpdatesToModal() {
     });
 }
 
+// ========== UNREAD MESSAGES ==========
 function updateUnreadCount() {
     let totalUnread = 0;
     unreadMessages = [];
@@ -420,6 +433,7 @@ function renderUnreadList() {
     `).join('');
 }
 
+// ========== SWITCH TAB ==========
 function switchTab(tab) {
     currentTab = tab;
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -432,6 +446,12 @@ function switchTab(tab) {
         else loadUserList();
     }
 }
+// ========================================
+// FURAB V14 - FULL LOGIC - PART 3/5
+// Private Chat, Room Chat, Reply, Tag
+// ========================================
+
+// ========== PRIVATE CHAT ==========
 function loadUserList() {
     db.ref('users').on('value', snap => {
         allUsers = [];
@@ -580,20 +600,24 @@ async function sendPrivateMessage(e) {
     input.value = '';
 }
 
+// ========== ROOM CHAT ==========
 function loadRoomMessages() {
     db.ref('messages_room').limitToLast(50).on('value', snap => {
         const container = document.getElementById('room-chat-screen');
         if (!container) return;
-        const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+        const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
         
         container.innerHTML = '';
         const data = snap.val();
         if (data) {
             Object.keys(data).forEach(id => renderRoomMessage(data[id], id));
-            
-            if (wasAtBottom || Date.now() - lastMessageTimestamp < 2000) {
+        }
+        
+        // AUTO SCROLL FIX - scroll ke bawah jika sebelumnya di bawah atau ada pesan baru
+        if (wasAtBottom || Date.now() - lastMessageTimestamp < 3000) {
+            setTimeout(() => {
                 container.scrollTop = container.scrollHeight;
-            }
+            }, 100);
         }
         lastMessageTimestamp = Date.now();
     });
@@ -660,6 +684,7 @@ async function renderRoomMessage(data, messageId) {
     container.appendChild(messageDiv);
 }
 
+// REPLY FUNCTION
 function replyToMessage(messageId, user, text) {
     replyTo = { messageId: messageId, user: user, text: text };
     const replyIndicator = document.getElementById('reply-indicator');
@@ -677,6 +702,7 @@ function cancelReply() {
     if (replyIndicator) replyIndicator.style.display = 'none';
 }
 
+// TAG USER POPUP
 function showUserList(filter) {
     let popup = document.getElementById('user-list-popup');
     if (!popup) {
@@ -727,7 +753,12 @@ function insertTag(tag) {
     const popup = document.getElementById('user-list-popup');
     if (popup) popup.style.display = 'none';
 }
+// ========================================
+// FURAB V14 - FULL LOGIC - PART 4/5
+// Notification, AI, Settings, Boot
+// ========================================
 
+// ========== NOTIFICATION ==========
 function showInAppNotification(title, body) {
     let toastContainer = document.getElementById('toast-container');
     if (!toastContainer) {
@@ -829,6 +860,7 @@ async function sendRoomMessage(e) {
     }
 }
 
+// ========== AI CHAT (FIX STUCK) ==========
 function toggleAIChat() {
     const modal = document.getElementById('ai-modal');
     if (modal) {
@@ -848,22 +880,53 @@ async function sendAIMessage(e) {
     
     container.innerHTML += `<div class="ai-message user"><div class="ai-bubble">${escapeHtml(msg)}</div></div>`;
     input.value = '';
-    container.innerHTML += `<div class="ai-message bot"><div class="ai-bubble"><i class="fas fa-spinner fa-spin"></i> Thinking...</div></div>`;
+    const thinkingDiv = document.createElement('div');
+    thinkingDiv.className = 'ai-message bot';
+    thinkingDiv.id = 'ai-thinking';
+    thinkingDiv.innerHTML = `<div class="ai-bubble"><i class="fas fa-spinner fa-spin"></i> Thinking...</div>`;
+    container.appendChild(thinkingDiv);
     container.scrollTop = container.scrollHeight;
     
     try {
-        const res = await fetch(`https://fgsi.dpdns.org/api/ai/gemini?apikey=RahmadXElaina&text=${encodeURIComponent(msg)}`);
-        const json = await res.json();
-        container.removeChild(container.lastChild);
-        const answer = json.status ? json.data.result.answer : "Maaf, AI sedang bermasalah.";
+        // Coba 3 API AI secara bergantian
+        let answer = null;
+        
+        // 1. Coba FGsi Gemini
+        try {
+            const res = await fetch(`https://fgsi.dpdns.org/api/ai/gemini?apikey=RahmadXElaina&text=${encodeURIComponent(msg)}`);
+            const json = await res.json();
+            if (json.status && json.data && json.data.result) {
+                answer = json.data.result.answer;
+            }
+        } catch(e) { console.log("FGsi error:", e); }
+        
+        // 2. Jika gagal, coba API cadangan
+        if (!answer) {
+            try {
+                const res = await fetch(`https://api.botcahx.eu.org/api/ai/gpt4?text=${encodeURIComponent(msg)}&apikey=alipabotcahx2026`);
+                const json = await res.json();
+                if (json.result) answer = json.result;
+            } catch(e) { console.log("Botcahx error:", e); }
+        }
+        
+        // 3. Jika masih gagal, gunakan respons default
+        if (!answer) {
+            answer = "Maaf, AI sedang mengalami gangguan. Silakan coba lagi nanti.";
+        }
+        
+        const thinkingEl = document.getElementById('ai-thinking');
+        if (thinkingEl) thinkingEl.remove();
         container.innerHTML += `<div class="ai-message bot"><div class="ai-bubble">${escapeHtml(answer)}</div></div>`;
+        
     } catch(err) {
-        container.removeChild(container.lastChild);
+        const thinkingEl = document.getElementById('ai-thinking');
+        if (thinkingEl) thinkingEl.remove();
         container.innerHTML += `<div class="ai-message bot"><div class="ai-bubble">Error: ${err.message}</div></div>`;
     }
     container.scrollTop = container.scrollHeight;
 }
 
+// ========== ROOM SETTINGS SYNC ==========
 db.ref('settings').on('value', snap => {
     const d = snap.val() || {};
     const roomNameEl = document.getElementById('room-name');
@@ -880,6 +943,8 @@ db.ref('settings').on('value', snap => {
     if (muteNotice) muteNotice.style.display = isMuted ? 'block' : 'none';
     if (roomInput) roomInput.disabled = isMuted;
 });
+
+// ========== BOOT ==========
 function boot() {
     console.log("Boot started, user:", currentUser);
     loadUserList();
@@ -887,6 +952,7 @@ function boot() {
     loadUpdatesToModal();
     loadPinnedMessage();
     loadStory();
+    addMusicButton(); // TAMBAHKAN TOMBOL MUSIK
     
     const roomInput = document.getElementById('room-chat-in');
     if (roomInput) {
@@ -925,7 +991,258 @@ function boot() {
         searchInput.addEventListener('input', filterUserList);
     }
 }
+// ========================================
+// FURAB V14 - FULL LOGIC - PART 5/5
+// Music Feature & Event Listeners
+// ========================================
 
+// ========== MUSIC API CONFIG ==========
+const API_CONFIG = {
+    botcahx: {
+        baseUrl: "https://api.botcahx.eu.org",
+        apikey: "alipabotcahx2026",
+        endpoints: { search: "/api/search/youtube", download: "/api/download/ytmp3" }
+    },
+    yudz: {
+        baseUrl: "https://api.yydz.biz.id",
+        apikey: "alipaixyudz",
+        endpoints: { play: "/api/playmusic" }
+    },
+    fgsi: {
+        baseUrl: "https://fgsi.dpdns.org",
+        apikey: "RahmadXElaina",
+        endpoints: { play: "/api/audio/play" }
+    },
+    alip: {
+        baseUrl: "https://docs-alip.clutch.web.id",
+        apikey: "alipaiapikeybaru",
+        endpoints: { play: "/api/music/play" }
+    },
+    termai: {
+        baseUrl: "https://api.termai.cc",
+        apikey: "alipaitermai2026",
+        endpoints: { play: "/api/play" }
+    },
+    pitu: {
+        baseUrl: "https://api.pitucode.com",
+        apikey: "alipaipitu2026",
+        endpoints: { play: "/api/music" }
+    }
+};
+
+let currentAudio = null;
+let currentSong = null;
+let isPlaying = false;
+
+// ========== MUSIC FUNCTIONS ==========
+async function searchMusicAll(query) {
+    const results = [];
+    
+    for (const [source, config] of Object.entries(API_CONFIG)) {
+        try {
+            let res, data;
+            if (source === 'botcahx') {
+                res = await fetch(`${config.baseUrl}${config.endpoints.search}?query=${encodeURIComponent(query)}&apikey=${config.apikey}`);
+                data = await res.json();
+                if (data.result && data.result.length > 0) {
+                    results.push({
+                        source: "Botcahx",
+                        title: data.result[0].title,
+                        artist: data.result[0].channel,
+                        duration: data.result[0].duration,
+                        thumbnail: data.result[0].thumbnail,
+                        videoUrl: data.result[0].url,
+                        api: "botcahx"
+                    });
+                }
+            } else {
+                res = await fetch(`${config.baseUrl}${config.endpoints.play}?query=${encodeURIComponent(query)}&apikey=${config.apikey}`);
+                data = await res.json();
+                if (data.result && (data.result.url || data.result.audio)) {
+                    results.push({
+                        source: source.charAt(0).toUpperCase() + source.slice(1),
+                        title: data.result.title || query,
+                        artist: data.result.artist || "Unknown",
+                        duration: data.result.duration || "Unknown",
+                        thumbnail: data.result.thumbnail,
+                        audioUrl: data.result.url || data.result.audio,
+                        api: source
+                    });
+                }
+            }
+        } catch(e) { console.log(`${source} error:`, e); }
+    }
+    return results;
+}
+
+function playMusic(audioUrl, songData) {
+    try {
+        if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+        currentAudio = new Audio(audioUrl);
+        currentAudio.volume = 0.5;
+        currentAudio.play();
+        isPlaying = true;
+        currentSong = songData;
+        updateMusicPlayerUI(songData);
+        currentAudio.addEventListener('ended', () => { isPlaying = false; updatePlayButtonUI(false); });
+        return true;
+    } catch(e) { console.log("Play error:", e); return false; }
+}
+
+function pauseMusic() { if (currentAudio) { currentAudio.pause(); isPlaying = false; updatePlayButtonUI(false); } }
+function resumeMusic() { if (currentAudio) { currentAudio.play(); isPlaying = true; updatePlayButtonUI(true); } }
+function stopMusic() { if (currentAudio) { currentAudio.pause(); currentAudio = null; isPlaying = false; currentSong = null; hideMusicPlayer(); } }
+function setVolume(value) { if (currentAudio) currentAudio.volume = value / 100; }
+
+// ========== MUSIC UI ==========
+function showMusicPlayer() {
+    let player = document.getElementById('music-player');
+    if (!player) {
+        player = document.createElement('div');
+        player.id = 'music-player';
+        player.className = 'music-player';
+        player.innerHTML = `
+            <div class="music-player-content">
+                <div class="music-info"><img id="music-thumb" src=""><div class="music-details"><div id="music-title">-</div><div id="music-artist">-</div></div></div>
+                <div class="music-controls">
+                    <button id="music-prev" class="music-btn"><i class="fas fa-backward"></i></button>
+                    <button id="music-playpause" class="music-btn play-btn"><i class="fas fa-play"></i></button>
+                    <button id="music-next" class="music-btn"><i class="fas fa-forward"></i></button>
+                    <button id="music-stop" class="music-btn"><i class="fas fa-stop"></i></button>
+                </div>
+                <div class="music-volume"><i class="fas fa-volume-down"></i><input type="range" id="music-volume" min="0" max="100" value="50"><i class="fas fa-volume-up"></i></div>
+                <button id="music-close" class="music-close"><i class="fas fa-times"></i></button>
+            </div>
+        `;
+        document.body.appendChild(player);
+        document.getElementById('music-playpause').onclick = () => { if (isPlaying) pauseMusic(); else if (currentAudio) resumeMusic(); };
+        document.getElementById('music-stop').onclick = stopMusic;
+        document.getElementById('music-close').onclick = () => { stopMusic(); player.style.display = 'none'; };
+        document.getElementById('music-volume').oninput = (e) => setVolume(e.target.value);
+    }
+    player.style.display = 'flex';
+}
+
+function updateMusicPlayerUI(songData) {
+    showMusicPlayer();
+    document.getElementById('music-title').innerText = songData.title || '-';
+    document.getElementById('music-artist').innerText = songData.artist || '-';
+    if (songData.thumbnail) document.getElementById('music-thumb').src = songData.thumbnail;
+    updatePlayButtonUI(true);
+}
+
+function updatePlayButtonUI(playing) {
+    const btn = document.getElementById('music-playpause');
+    if (btn) btn.innerHTML = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+}
+
+function hideMusicPlayer() {
+    const player = document.getElementById('music-player');
+    if (player) player.style.display = 'none';
+}
+
+function showMusicSearchModal() {
+    let modal = document.getElementById('music-search-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'music-search-modal';
+        modal.className = 'music-modal';
+        modal.innerHTML = `
+            <div class="music-modal-content">
+                <div class="music-modal-header"><h3><i class="fas fa-music"></i> Cari & Putar Lagu</h3><button id="close-music-modal"><i class="fas fa-times"></i></button></div>
+                <div class="music-modal-body">
+                    <div class="music-search-bar"><input type="text" id="music-search-input" placeholder="Cari lagu..."><button id="music-search-btn"><i class="fas fa-search"></i> Cari</button></div>
+                    <div id="music-results-list" class="music-results-list"><div class="loading">Cari lagu untuk mulai...</div></div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('close-music-modal').onclick = () => modal.style.display = 'none';
+        document.getElementById('music-search-btn').onclick = () => { const q = document.getElementById('music-search-input').value; if (q) searchAndDisplayResults(q); };
+        document.getElementById('music-search-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { const q = e.target.value; if (q) searchAndDisplayResults(q); } });
+    }
+    modal.style.display = 'flex';
+}
+
+async function searchAndDisplayResults(query) {
+    const container = document.getElementById('music-results-list');
+    container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+    const results = await searchMusicAll(query);
+    if (results.length === 0) { container.innerHTML = '<div class="no-results">❌ Lagu tidak ditemukan</div>'; return; }
+    container.innerHTML = results.map((song, idx) => `
+        <div class="music-result-item" onclick="playSongFromResult(${idx})">
+            <div class="music-result-thumb"><img src="${song.thumbnail || 'https://via.placeholder.com/50'}"></div>
+            <div class="music-result-info"><div class="music-result-title">${escapeHtml(song.title)}</div><div class="music-result-artist">${escapeHtml(song.artist)} • ${song.duration} • ${song.source}</div></div>
+            <button class="music-result-play"><i class="fas fa-play"></i></button>
+        </div>
+    `).join('');
+    window.playSongFromResult = function(idx) {
+        const song = results[idx];
+        if (song.audioUrl) playMusic(song.audioUrl, song);
+        else if (song.videoUrl) getAudioFromVideo(song.videoUrl, song);
+        else alert("URL audio tidak tersedia");
+        document.getElementById('music-search-modal').style.display = 'none';
+    };
+}
+
+async function getAudioFromVideo(videoUrl, songData) {
+    try {
+        const res = await fetch(`${API_CONFIG.botcahx.baseUrl}${API_CONFIG.botcahx.endpoints.download}?url=${encodeURIComponent(videoUrl)}&apikey=${API_CONFIG.botcahx.apikey}`);
+        const data = await res.json();
+        if (data.result && data.result.url) playMusic(data.result.url, { ...songData, audioUrl: data.result.url });
+        else alert("Gagal mendapatkan audio");
+    } catch(e) { alert("Error: " + e.message); }
+}
+
+function addMusicButton() {
+    const headerRight = document.querySelector('.header-right');
+    if (headerRight && !document.getElementById('music-toggle-btn')) {
+        const musicBtn = document.createElement('button');
+        musicBtn.id = 'music-toggle-btn';
+        musicBtn.innerHTML = '<i class="fas fa-music"></i>';
+        musicBtn.title = 'Cari & Putar Lagu';
+        musicBtn.onclick = showMusicSearchModal;
+        headerRight.insertBefore(musicBtn, document.getElementById('menu-btn'));
+    }
+    const style = document.createElement('style');
+    style.textContent = `
+        .music-player { position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 500px; background: var(--bg-header); border-radius: 20px; padding: 12px 16px; display: none; align-items: center; z-index: 10001; border: 1px solid var(--border); }
+        .music-player-content { display: flex; align-items: center; gap: 12px; width: 100%; flex-wrap: wrap; }
+        .music-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 150px; }
+        .music-info img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+        .music-details { flex: 1; }
+        .music-details #music-title { font-size: 12px; font-weight: 700; color: white; }
+        .music-details #music-artist { font-size: 10px; color: var(--gray); }
+        .music-controls { display: flex; gap: 8px; }
+        .music-btn { background: var(--p); border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .play-btn { background: var(--success); }
+        .music-volume { display: flex; align-items: center; gap: 8px; }
+        .music-volume input { width: 80px; }
+        .music-close { background: none; border: none; color: var(--gray); cursor: pointer; }
+        .music-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 20000; align-items: center; justify-content: center; }
+        .music-modal-content { background: var(--bg-header); border-radius: 28px; width: 90%; max-width: 450px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; }
+        .music-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+        .music-modal-header h3 { color: white; }
+        .music-modal-header button { background: none; border: none; color: var(--gray); font-size: 20px; cursor: pointer; }
+        .music-modal-body { padding: 20px; overflow-y: auto; }
+        .music-search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .music-search-bar input { flex: 1; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 28px; color: white; outline: none; }
+        .music-search-bar button { padding: 12px 20px; background: var(--p); border: none; border-radius: 28px; color: white; cursor: pointer; }
+        .music-results-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+        .music-result-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 16px; cursor: pointer; }
+        .music-result-item:hover { background: rgba(142,68,173,0.3); }
+        .music-result-thumb img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        .music-result-info { flex: 1; }
+        .music-result-title { font-weight: 600; font-size: 14px; color: white; }
+        .music-result-artist { font-size: 11px; color: var(--gray); }
+        .music-result-play { background: var(--p); border: none; width: 36px; height: 36px; border-radius: 50%; color: white; cursor: pointer; }
+        .no-results, .loading { text-align: center; padding: 40px; color: var(--gray); }
+        @media (max-width: 550px) { .music-player-content { flex-direction: column; align-items: stretch; } .music-volume { justify-content: center; } }
+    `;
+    document.head.appendChild(style);
+}
+
+// ========== EVENT LISTENERS ==========
 document.getElementById('login-btn').onclick = handleLogin;
 document.getElementById('register-btn').onclick = handleRegister;
 document.getElementById('logout-btn').onclick = logout;
@@ -953,6 +1270,7 @@ document.getElementById('email-contact').onclick = (e) => { e.preventDefault(); 
 document.getElementById('instagram-contact').onclick = (e) => { e.preventDefault(); alert('📱 @rayy_official'); };
 document.getElementById('telegram-contact').onclick = (e) => { e.preventDefault(); alert('💬 @rayy'); };
 
+// Global functions
 window.pinMessage = pinMessage;
 window.unpinMessage = unpinMessage;
 window.replyToMessage = replyToMessage;
@@ -964,9 +1282,11 @@ window.closeStory = closeStory;
 window.openPrivateChat = openPrivateChat;
 window.filterUserList = filterUserList;
 window.closeWelcomeModal = closeWelcomeModal;
+window.showMusicSearchModal = showMusicSearchModal;
 
-const style = document.createElement('style');
-style.textContent = `
+// CSS for popup
+const stylePopup = document.createElement('style');
+stylePopup.textContent = `
     .user-list-popup {
         position: fixed;
         bottom: 80px;
@@ -1006,6 +1326,6 @@ style.textContent = `
         to { opacity: 1; transform: translateY(0); }
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(stylePopup);
 
 checkAuth();
