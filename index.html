@@ -2,259 +2,188 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ROOM | CHAT </title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB CLOSED - RAYY DEV</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    
-    <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --p: #8e44ad;
+            --p-light: #a55eea;
+            --bg: #020617;
+            --card: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(142, 68, 173, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(142, 68, 173, 0.1) 0%, transparent 40%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+        }
+
+        .icon-box i {
+            font-size: 40px;
+            color: #ef4444;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            padding: 14px 20px;
+            border-radius: 18px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            border-color: var(--p-light);
+            background: rgba(142, 68, 173, 0.1);
+            transform: translateX(5px);
+        }
+
+        .contact-item i {
+            font-size: 20px;
+            color: #25d366; /* WhatsApp Color */
+            margin-right: 15px;
+        }
+
+        .contact-info {
+            text-align: left;
+        }
+
+        .contact-info span {
+            display: block;
+            font-size: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .contact-info b {
+            font-size: 14px;
+        }
+
+        footer {
+            margin-top: 35px;
+            font-size: 12px;
+            color: #475569;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+        }
+
+        footer strong {
+            color: var(--p-light);
+        }
+    </style>
 </head>
 <body>
 
-    <!-- AUTH VIEW -->
-    <div id="auth-view">
-        <div class="auth-card">
-            <div class="auth-logo"><i class="fas fa-ghost"></i></div>
-            <h2>Rayy Daftar/log account</h2>
-            <div class="auth-input-group">
-                <i class="fas fa-id-card"></i>
-                <input id="login-username" type="text" placeholder="Username">
-            </div>
-            <div class="auth-input-group">
-                <i class="fas fa-key"></i>
-                <input id="login-password" type="password" placeholder="Password">
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button id="login-btn" class="btn-auth btn-login">LOGIN</button>
-                <button id="register-btn" class="btn-auth btn-register">REGISTER</button>
-            </div>
+    <div class="container">
+        <div class="icon-box">
+            <i class="fa-solid fa-circle-exclamation"></i>
         </div>
+        
+        <h2>Web Telah Ditutup</h2>
+        <p>Web ini telah ditutup <b>Permanen</b> oleh developer. Silakan hubungi tim CS untuk mendapatkan versi web terbaru dan full update.</p>
+
+        <div class="contact-list">
+            <a href="https://wa.me/628131172093" class="contact-item" target="_blank">
+                <i class="fa-brands fa-whatsapp"></i>
+                <div class="contact-info">
+                    <span>CS Support</span>
+                    <b>628131172093</b>
+                </div>
+            </a>
+
+            <a href="https://wa.me/6285794545996" class="contact-item" target="_blank" style="border-color: var(--p-glow);">
+                <i class="fa-brands fa-whatsapp" style="color: var(--p-light);"></i>
+                <div class="contact-info">
+                    <span style="color: var(--p-light);">Developer Utama</span>
+                    <b>6285794545996</b>
+                </div>
+            </a>
+
+            <a href="https://wa.me/6285189712417" class="contact-item" target="_blank">
+                <i class="fa-brands fa-whatsapp"></i>
+                <div class="contact-info">
+                    <span>CS Support</span>
+                    <b>6285189712417</b>
+                </div>
+            </a>
+        </div>
+
+        <footer>
+            © <strong>Rayy</strong> - Neural System Developer
+        </footer>
     </div>
 
-    <!-- STORY OVERLAY -->
-    <div id="story-overlay">
-        <div class="story-header">
-            <div class="story-progress-container" id="story-bars"></div>
-            <div class="story-meta">
-                <div class="story-user">
-                    <img id="story-avatar" src="">
-                    <div>
-                        <b id="story-name" style="font-size:14px;">ROOM STATUS</b><br>
-                        <small style="opacity:0.7; font-size:10px;">Official Announcement</small>
-                    </div>
-                </div>
-                <div class="story-close" onclick="closeStory()"><i class="fas fa-times"></i></div>
-            </div>
-        </div>
-        <div class="story-content" id="story-media"></div>
-        <div class="story-caption" id="story-text"></div>
-    </div>
-
-    <!-- MAIN APP -->
-    <div id="app-view">
-        <header>
-            <div class="header-left" id="open-story-btn">
-                <img id="avatar-img" src="https://i.ibb.co.com/8L8C6d0/pfp.jpg">
-                <div class="header-info">
-                    <h4 id="room-name">FURAB ROOM</h4>
-                    <span id="room-status">NEURAL LINK ACTIVE</span>
-                </div>
-            </div>
-            <div class="header-right">
-                <!-- TOMBOL MUSIK SUDAH ADA DI SINI -->
-                <button id="music-toggle-btn" style="background:none; border:none; color:var(--gray); font-size:20px; cursor:pointer;">
-                    <i class="fas fa-music"></i>
-                </button>
-                <button id="member-list-btn"><i class="fas fa-users"></i></button>
-                <button id="menu-btn"><i class="fas fa-ellipsis-v"></i></button>
-                <button id="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
-            </div>
-        </header>
-
-        <div id="pinned-banner" class="pinned-banner" style="display: none;">
-            <div class="pinned-content" id="pinned-content" onclick="openPinnedModal()">
-                <i class="fas fa-thumbtack"></i>
-                <span class="pinned-text" id="pinned-text">Loading...</span>
-            </div>
-            <button class="unpin-icon" id="unpin-btn" onclick="event.stopPropagation(); unpinMessage()"><i class="fas fa-times"></i></button>
-        </div>
-
-        <div id="mute-notice">🔇 ROOM IS MUTED BY OWNER - Only admin can chat</div>
-
-        <div id="member-modal" class="member-modal">
-            <div class="member-modal-content">
-                <div class="member-modal-header">
-                    <h3><i class="fas fa-users"></i> Daftar Anggota</h3>
-                    <button class="member-modal-close" onclick="closeMemberModal()"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="member-list" id="member-list-container">
-                    <div class="loading">Loading members...</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="sidebar-menu" class="sidebar-menu">
-            <div class="sidebar-overlay"></div>
-            <div class="sidebar-content">
-                <div class="sidebar-header">
-                    <h3><i class="fas fa-bars"></i> Menu</h3>
-                    <button id="close-sidebar"><i class="fas fa-times"></i></button>
-                </div>
-                <div id="info-update-btn" class="sidebar-item">
-                    <i class="fas fa-bell"></i>
-                    <span>Info Update</span>
-                    <span class="badge-new">NEW</span>
-                </div>
-                <div id="dev-contact-btn" class="sidebar-item">
-                    <i class="fas fa-code"></i>
-                    <span>Dev Contact</span>
-                </div>
-                <div class="sidebar-divider"></div>
-                <div id="unread-messages-item" class="sidebar-item">
-                    <i class="fas fa-envelope"></i>
-                    <span>Pesan Belum Dibaca</span>
-                    <span id="sidebar-unread-count" class="unread-count">0</span>
-                </div>
-                <div id="pinned-messages-item" class="sidebar-item">
-                    <i class="fas fa-thumbtack"></i>
-                    <span>Pesan Terpin</span>
-                </div>
-            </div>
-        </div>
-
-        <div id="info-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-bell"></i> Info Update</h3>
-                    <button class="close-info-modal"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="modal-body" id="update-list-modal"><div class="loading">Loading...</div></div>
-            </div>
-        </div>
-
-        <div id="dev-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-code"></i> Developer Contact</h3>
-                    <button class="close-dev-modal"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="modal-body dev-body">
-                    <div class="dev-avatar"><i class="fas fa-user-astronaut"></i></div>
-                    <h2>Rayy Dev</h2>
-                    <div class="badge-group">
-                        <span class="badge-owner">👑 OWNER</span>
-                        <span class="badge-dev">💻 DEV</span>
-                        <span class="badge-js">⚡ JS</span>
-                        <span class="badge-verified">✅ VERIFIED</span>
-                    </div>
-                    <p class="dev-bio">Fullstack Developer | Web Creator</p>
-                    <div class="dev-contact">
-                        <a href="#" id="email-contact"><i class="fas fa-envelope"></i> Email</a>
-                        <a href="#" id="instagram-contact"><i class="fab fa-instagram"></i> Instagram</a>
-                        <a href="#" id="telegram-contact"><i class="fab fa-telegram"></i> Telegram</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="unread-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-envelope"></i> Pesan Belum Dibaca</h3>
-                    <button class="close-unread-modal"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="modal-body" id="unread-list-container"><div class="loading">Loading...</div></div>
-            </div>
-        </div>
-
-        <div id="pinned-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-thumbtack"></i> Pesan Terpin</h3>
-                    <button class="close-pinned-modal"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="modal-body" id="pinned-list-container"><div class="loading">Loading...</div></div>
-            </div>
-        </div>
-
-        <div class="bottom-nav">
-            <div id="nav-private" class="nav-item active" data-tab="private"><i class="fas fa-comment-dots"></i><span>Chat</span></div>
-            <div id="nav-room" class="nav-item" data-tab="room"><i class="fas fa-users"></i><span>Room</span></div>
-        </div>
-
-        <div id="private-tab" class="main-tab active">
-            <div class="chat-list-header">
-                <i class="fas fa-search"></i>
-                <input type="text" id="search-user" placeholder="Cari user...">
-            </div>
-            <div id="user-list-container" class="user-list-container">
-                <div class="loading">Loading users...</div>
-            </div>
-            <div id="private-chat-screen" class="private-chat-screen" style="display: none;">
-                <div class="private-chat-header">
-                    <button id="back-to-list"><i class="fas fa-arrow-left"></i></button>
-                    <div class="private-chat-info">
-                        <h4 id="private-chat-name">User</h4>
-                        <span id="private-chat-status">online</span>
-                    </div>
-                </div>
-                <div id="private-chat-messages" class="private-chat-messages"></div>
-                <div class="private-chat-input">
-                    <form id="private-chat-form">
-                        <input type="text" id="private-chat-in" placeholder="Ketik pesan...">
-                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div id="room-tab" class="main-tab">
-            <div id="room-chat-screen" class="room-chat-screen"></div>
-            <div class="room-input-container">
-                <div id="reply-indicator" class="reply-indicator" style="display: none;">
-                    <div><i class="fas fa-reply-all"></i> <strong>Membalas:</strong> <span id="reply-preview-text"></span></div>
-                    <button type="button" id="cancel-reply-btn" onclick="cancelReply()"><i class="fas fa-times"></i></button>
-                </div>
-                <form id="room-chat-form">
-                    <input type="text" id="room-chat-in" placeholder="Ketik @ untuk tag user...">
-                    <button type="submit"><i class="fas fa-paper-plane"></i></button>
-                </form>
-            </div>
-        </div>
-
-        <button id="ai-button" class="ai-button"><i class="fas fa-brain"></i><span>AI</span></button>
-
-        <div id="ai-modal" class="ai-modal">
-            <div class="ai-modal-content">
-                <div class="ai-header">
-                    <div class="ai-title"><i class="fas fa-brain"></i><h3>AI Assistant</h3></div>
-                    <button id="close-ai"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="ai-messages" id="ai-messages">
-                    <div class="ai-message bot"><div class="ai-bubble">Halo! Ada yang bisa saya bantu?</div></div>
-                </div>
-                <div class="ai-input">
-                    <form id="ai-chat-form">
-                        <input type="text" id="ai-input" placeholder="Tanya apapun...">
-                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="welcome-modal" class="welcome-modal">
-        <div class="welcome-content">
-            <div class="welcome-thumb"><img src="https://files.catbox.moe/hohg36.jpg"></div>
-            <h3 id="welcome-username"></h3>
-            <p id="welcome-time"></p>
-            <button id="close-welcome">Mulai Chat</button>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
+
