@@ -48,7 +48,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ========== AUTH ==========
 function checkAuth() {
     currentUser = localStorage.getItem('furab_user');
     if (currentUser) {
@@ -131,7 +130,6 @@ function closeWelcomeModal() {
     document.getElementById('welcome-modal').style.display = 'none';
 }
 
-// ========== STORY ==========
 function loadStory() {
     db.ref('status_room').on('value', snap => {
         activeStatus = [];
@@ -198,7 +196,6 @@ function closeStory() {
     clearTimeout(statusTimer);
 }
 
-// ========== MEMBER LIST ==========
 function openMemberModal() {
     const container = document.getElementById('member-list-container');
     container.innerHTML = '<div class="loading">Loading members...</div>';
@@ -239,7 +236,6 @@ function closeMemberModal() {
 // Pin Message, Sidebar, Unread Messages
 // ========================================
 
-// ========== PIN MESSAGE ==========
 async function pinMessage(messageId, messageData, isRoom = true) {
     const pinData = {
         messageId: messageId,
@@ -310,7 +306,6 @@ function closePinnedModal() {
     document.getElementById('pinned-modal').style.display = 'none';
 }
 
-// ========== SIDEBAR ==========
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar-menu');
     if (sidebar) {
@@ -318,7 +313,6 @@ function toggleSidebar() {
     }
 }
 
-// ========== MODALS ==========
 function openInfoModal() {
     toggleSidebar();
     loadUpdatesToModal();
@@ -362,7 +356,6 @@ function loadUpdatesToModal() {
     });
 }
 
-// ========== UNREAD MESSAGES ==========
 function updateUnreadCount() {
     let totalUnread = 0;
     unreadMessages = [];
@@ -432,7 +425,6 @@ function renderUnreadList() {
     `).join('');
 }
 
-// ========== SWITCH TAB ==========
 function switchTab(tab) {
     currentTab = tab;
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -450,7 +442,6 @@ function switchTab(tab) {
 // Private Chat, Room Chat, Reply, Tag
 // ========================================
 
-// ========== PRIVATE CHAT ==========
 function loadUserList() {
     db.ref('users').on('value', snap => {
         allUsers = [];
@@ -599,7 +590,6 @@ async function sendPrivateMessage(e) {
     input.value = '';
 }
 
-// ========== ROOM CHAT ==========
 function loadRoomMessages() {
     db.ref('messages_room').limitToLast(50).on('value', snap => {
         const container = document.getElementById('room-chat-screen');
@@ -682,7 +672,6 @@ async function renderRoomMessage(data, messageId) {
     container.appendChild(messageDiv);
 }
 
-// ========== REPLY FUNCTION ==========
 function replyToMessage(messageId, user, text) {
     replyTo = { messageId: messageId, user: user, text: text };
     const replyIndicator = document.getElementById('reply-indicator');
@@ -700,7 +689,6 @@ function cancelReply() {
     if (replyIndicator) replyIndicator.style.display = 'none';
 }
 
-// ========== TAG USER POPUP ==========
 function showUserList(filter) {
     let popup = document.getElementById('user-list-popup');
     if (!popup) {
@@ -756,7 +744,6 @@ function insertTag(tag) {
 // Notification, AI, Settings, Boot
 // ========================================
 
-// ========== NOTIFICATION ==========
 function showInAppNotification(title, body) {
     let toastContainer = document.getElementById('toast-container');
     if (!toastContainer) {
@@ -858,7 +845,6 @@ async function sendRoomMessage(e) {
     }
 }
 
-// ========== AI CHAT (FIX STUCK) ==========
 function toggleAIChat() {
     const modal = document.getElementById('ai-modal');
     if (modal) {
@@ -888,7 +874,6 @@ async function sendAIMessage(e) {
     try {
         let answer = null;
         
-        // 1. Coba FGsi Gemini
         try {
             const res = await fetch(`https://fgsi.dpdns.org/api/ai/gemini?apikey=RahmadXElaina&text=${encodeURIComponent(msg)}`);
             const json = await res.json();
@@ -897,7 +882,6 @@ async function sendAIMessage(e) {
             }
         } catch(e) { console.log("FGsi error:", e); }
         
-        // 2. Jika gagal, coba Botcahx
         if (!answer) {
             try {
                 const res = await fetch(`https://api.botcahx.eu.org/api/ai/gpt4?text=${encodeURIComponent(msg)}&apikey=alipabotcahx2026`);
@@ -906,7 +890,6 @@ async function sendAIMessage(e) {
             } catch(e) { console.log("Botcahx error:", e); }
         }
         
-        // 3. Jika masih gagal
         if (!answer) {
             answer = "Maaf, AI sedang mengalami gangguan. Silakan coba lagi nanti.";
         }
@@ -923,7 +906,6 @@ async function sendAIMessage(e) {
     container.scrollTop = container.scrollHeight;
 }
 
-// ========== ROOM SETTINGS SYNC ==========
 db.ref('settings').on('value', snap => {
     const d = snap.val() || {};
     const roomNameEl = document.getElementById('room-name');
@@ -941,7 +923,6 @@ db.ref('settings').on('value', snap => {
     if (roomInput) roomInput.disabled = isMuted;
 });
 
-// ========== BOOT ==========
 function boot() {
     console.log("Boot started, user:", currentUser);
     loadUserList();
@@ -949,7 +930,7 @@ function boot() {
     loadUpdatesToModal();
     loadPinnedMessage();
     loadStory();
-    addMusicButton(); // Tombol musik
+    addMusicButton();
     
     const roomInput = document.getElementById('room-chat-in');
     if (roomInput) {
