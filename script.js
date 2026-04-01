@@ -970,11 +970,39 @@ function boot() {
     }
 }
 // ========================================
-// FURAB V14 - FULL LOGIC - PART 5/5
-// Music Feature (Full Web Embed - YouTube/SoundCloud)
+// FURAB V14 - FULL LOGIC - PART 5/5 (FINAL)
+// Music Feature - Play Music Directly (Working API)
+// Event Listeners & checkAuth()
 // ========================================
 
-let currentMusicTab = 'youtube';
+let currentAudio = null;
+let currentSong = null;
+let isPlaying = false;
+
+// ========== SEARCH MUSIC VIA WORKING API ==========
+async function searchMusicAPI(query) {
+    try {
+        const res = await fetch(`https://api-faa.my.id/faa/ytplay?query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        
+        if (data.status && data.result) {
+            return {
+                title: data.result.title,
+                artist: data.result.author || "Unknown",
+                duration: data.result.duration_timestamp || "Unknown",
+                thumbnail: data.result.thumbnail,
+                audioUrl: data.result.mp3,
+                videoUrl: data.result.url,
+                views: data.result.views,
+                published: data.result.published
+            };
+        }
+        return null;
+    } catch(e) {
+        console.log("API Error:", e);
+        return null;
+    }
+}
 
 // ========== MUSIC SEARCH MODAL ==========
 function showMusicSearchModal() {
@@ -990,19 +1018,19 @@ function showMusicSearchModal() {
                     <button id="close-music-modal"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="music-modal-body">
-                    <div class="music-tabs">
-                        <button id="tab-youtube" class="music-tab active">🎬 YouTube Music</button>
-                        <button id="tab-soundcloud" class="music-tab">🎵 SoundCloud</button>
+                    <div class="music-search-bar">
+                        <input type="text" id="music-search-input" placeholder="Cari lagu... (contoh: Tekomlaku)">
+                        <button id="music-search-btn"><i class="fas fa-search"></i> Cari</button>
                     </div>
                     <div id="music-player-container" class="music-player-container">
-                        <iframe id="music-iframe" 
-                            src="https://www.youtube.com"
-                            style="width:100%; height:100%; border:none; border-radius:16px; background:#0f0f0f;">
-                        </iframe>
+                        <div class="music-placeholder">
+                            <i class="fas fa-headphones"></i>
+                            <p>Cari lagu untuk mulai mendengarkan</p>
+                        </div>
                     </div>
+                    <div id="music-results-list" class="music-results-list"></div>
                     <div class="music-note">
-                        <i class="fas fa-info-circle"></i> Browsing, cari lagu, dan putar langsung dari situs asli. 
-                        Klik tombol play di video/track untuk memutar.
+                        <i class="fas fa-info-circle"></i> Putar lagu langsung di web, tanpa buka tab baru!
                     </div>
                 </div>
             </div>
@@ -1010,43 +1038,172 @@ function showMusicSearchModal() {
         document.body.appendChild(modal);
         
         document.getElementById('close-music-modal').onclick = () => {
+            stopMusic();
             modal.style.display = 'none';
-            const iframe = document.getElementById('music-iframe');
-            if (iframe) iframe.src = iframe.src;
         };
-        document.getElementById('tab-youtube').onclick = () => switchMusicTab('youtube');
-        document.getElementById('tab-soundcloud').onclick = () => switchMusicTab('soundcloud');
-        
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) modal.style.display = 'none';
+        document.getElementById('music-search-btn').onclick = searchAndPlayMusic;
+        document.getElementById('music-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchAndPlayMusic();
         });
     }
     modal.style.display = 'flex';
+}
+
+async function searchAndPlayMusic() {
+    const query = document.getElementById('music-search-input').value.trim();
+    if (!query) {
+        alert("Masukkan judul lagu!");
+        return;
+    }
     
-    const iframe = document.getElementById('music-iframe');
-    if (iframe && currentMusicTab === 'youtube') {
-        iframe.src = 'https://www.youtube.com';
-    } else if (iframe && currentMusicTab === 'soundcloud') {
-        iframe.src = 'https://soundcloud.com/discover';
+    const container = document.getElementById('music-player-container');
+    const resultsContainer = document.getElementById('music-results-list');
+    
+    container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Mencari lagu...</div>';
+    resultsContainer.innerHTML = '';
+    
+    const song = await searchMusicAPI(query);
+    
+    if (!song) {
+        container.innerHTML = `
+            <div class="music-placeholder error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>❌ Lagu tidak ditemukan</p>
+                <small>Coba dengan judul yang berbeda</small>
+            </div>
+        `;
+        return;
+    }
+    
+    // Tampilkan hasil
+    container.innerHTML = `
+        <div class="music-song-card">
+            <img class="music-thumb" src="${song.thumbnail}" onerror="this.src='https://via.placeholder.com/200'">
+            <div class="music-song-info">
+                <div class="music-song-title">${escapeHtml(song.title)}</div>
+                <div class="music-song-artist">${escapeHtml(song.artist)}</div>
+                <div class="music-song-duration">⏱️ ${song.duration}</div>
+                <div class="music-song-views">👁️ ${song.views?.toLocaleString() || 'Unknown'} views</div>
+            </div>
+            <div class="music-controls-panel">
+                <button id="music-play-btn" class="music-control-btn play"><i class="fas fa-play"></i> Putar</button>
+                <button id="music-stop-btn" class="music-control-btn stop"><i class="fas fa-stop"></i> Stop</button>
+                <div class="music-volume-slider">
+                    <i class="fas fa-volume-down"></i>
+                    <input type="range" id="music-volume-range" min="0" max="100" value="50">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Tambahkan info ke results
+    resultsContainer.innerHTML = `
+        <div class="music-info-card">
+            <div class="music-info-title">🎵 ${escapeHtml(song.title)}</div>
+            <div class="music-info-artist">🎤 ${escapeHtml(song.artist)}</div>
+            <div class="music-info-detail">📅 ${song.published || 'Unknown'}</div>
+            <a href="${song.videoUrl}" target="_blank" class="music-youtube-link">
+                <i class="fab fa-youtube"></i> Buka di YouTube
+            </a>
+        </div>
+    `;
+    
+    // Event listeners untuk player
+    const playBtn = document.getElementById('music-play-btn');
+    const stopBtn = document.getElementById('music-stop-btn');
+    const volumeSlider = document.getElementById('music-volume-range');
+    
+    playBtn.onclick = () => {
+        if (currentAudio && currentSong === song) {
+            if (isPlaying) {
+                pauseMusic();
+                playBtn.innerHTML = '<i class="fas fa-play"></i> Putar';
+            } else {
+                resumeMusic();
+                playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+            }
+        } else {
+            playMusic(song.audioUrl, song);
+            playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+        }
+    };
+    
+    stopBtn.onclick = () => {
+        stopMusic();
+        playBtn.innerHTML = '<i class="fas fa-play"></i> Putar';
+    };
+    
+    volumeSlider.oninput = (e) => {
+        if (currentAudio) currentAudio.volume = e.target.value / 100;
+    };
+    
+    window.currentSongData = song;
+}
+
+function playMusic(audioUrl, songData) {
+    try {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+        
+        currentAudio = new Audio(audioUrl);
+        currentAudio.volume = document.getElementById('music-volume-range')?.value / 100 || 0.5;
+        
+        const playPromise = currentAudio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(e => {
+                console.log("Autoplay blocked:", e);
+                alert("Klik play untuk memutar lagu");
+            });
+        }
+        
+        isPlaying = true;
+        currentSong = songData;
+        
+        currentAudio.addEventListener('ended', () => {
+            isPlaying = false;
+            const playBtn = document.getElementById('music-play-btn');
+            if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i> Putar';
+        });
+        
+        currentAudio.addEventListener('error', () => {
+            alert("Error memutar lagu");
+            stopMusic();
+        });
+        
+        return true;
+    } catch(e) {
+        console.log("Play error:", e);
+        alert("Gagal memutar lagu");
+        return false;
     }
 }
 
-function switchMusicTab(tab) {
-    currentMusicTab = tab;
-    const tabYoutube = document.getElementById('tab-youtube');
-    const tabSoundcloud = document.getElementById('tab-soundcloud');
-    const iframe = document.getElementById('music-iframe');
-    
-    if (tabYoutube) tabYoutube.classList.toggle('active', tab === 'youtube');
-    if (tabSoundcloud) tabSoundcloud.classList.toggle('active', tab === 'soundcloud');
-    
-    if (iframe) {
-        if (tab === 'youtube') {
-            iframe.src = 'https://www.youtube.com';
-        } else {
-            iframe.src = 'https://soundcloud.com/discover';
-        }
+function pauseMusic() {
+    if (currentAudio) {
+        currentAudio.pause();
+        isPlaying = false;
     }
+}
+
+function resumeMusic() {
+    if (currentAudio) {
+        currentAudio.play();
+        isPlaying = true;
+    }
+}
+
+function stopMusic() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+        isPlaying = false;
+        currentSong = null;
+    }
+    const playBtn = document.getElementById('music-play-btn');
+    if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i> Putar';
 }
 
 function addMusicButton() {
@@ -1065,15 +1222,12 @@ function addMusicButton() {
     const musicBtn = document.createElement('button');
     musicBtn.id = 'music-toggle-btn';
     musicBtn.innerHTML = '<i class="fas fa-music"></i>';
-    musicBtn.title = 'Music Player - YouTube & SoundCloud';
+    musicBtn.title = 'Music Player';
     musicBtn.style.background = 'none';
     musicBtn.style.border = 'none';
     musicBtn.style.color = 'var(--gray)';
     musicBtn.style.fontSize = '20px';
     musicBtn.style.cursor = 'pointer';
-    musicBtn.style.transition = '0.2s';
-    musicBtn.onmouseenter = () => musicBtn.style.color = 'var(--p)';
-    musicBtn.onmouseleave = () => musicBtn.style.color = 'var(--gray)';
     musicBtn.onclick = showMusicSearchModal;
     
     const memberBtn = document.getElementById('member-list-btn');
@@ -1082,8 +1236,6 @@ function addMusicButton() {
     } else {
         headerRight.appendChild(musicBtn);
     }
-    
-    console.log("🎵 Music button added to header");
 }
 
 const musicStyle = document.createElement('style');
@@ -1100,28 +1252,17 @@ musicStyle.textContent = `
         z-index: 20000;
         align-items: center;
         justify-content: center;
-        animation: fadeIn 0.2s ease;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
     }
     .music-modal-content {
         background: var(--bg-header);
         border-radius: 28px;
         width: 90%;
-        max-width: 1000px;
+        max-width: 550px;
         max-height: 85vh;
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
         border: 1px solid var(--border);
-        animation: slideUp 0.3s ease;
-    }
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
     }
     .music-modal-header {
         display: flex;
@@ -1129,19 +1270,11 @@ musicStyle.textContent = `
         align-items: center;
         padding: 16px 20px;
         border-bottom: 1px solid var(--border);
-        flex-shrink: 0;
     }
     .music-modal-header h3 {
         color: white;
         font-size: 18px;
         margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .music-modal-header h3 i {
-        color: var(--p);
-        font-size: 22px;
     }
     .music-modal-header button {
         background: none;
@@ -1149,17 +1282,6 @@ musicStyle.textContent = `
         color: var(--gray);
         font-size: 24px;
         cursor: pointer;
-        transition: 0.2s;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .music-modal-header button:hover {
-        background: rgba(255,255,255,0.1);
-        color: var(--danger);
     }
     .music-modal-body {
         padding: 20px;
@@ -1167,108 +1289,172 @@ musicStyle.textContent = `
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 15px;
-        min-height: 0;
+        gap: 20px;
     }
-    .music-tabs {
+    .music-search-bar {
         display: flex;
-        gap: 12px;
-        flex-shrink: 0;
+        gap: 10px;
     }
-    .music-tab {
+    .music-search-bar input {
         flex: 1;
-        padding: 12px 16px;
+        padding: 12px;
         background: rgba(0,0,0,0.3);
         border: 1px solid var(--border);
-        border-radius: 40px;
-        color: var(--gray);
-        cursor: pointer;
-        text-align: center;
-        font-weight: 600;
-        transition: 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: 14px;
-    }
-    .music-tab i { font-size: 16px; }
-    .music-tab:hover {
-        background: rgba(142,68,173,0.2);
-        color: var(--p-light);
-    }
-    .music-tab.active {
-        background: var(--p);
+        border-radius: 28px;
         color: white;
-        border-color: var(--p);
-        box-shadow: 0 4px 12px rgba(142,68,173,0.3);
+        outline: none;
+    }
+    .music-search-bar button {
+        padding: 12px 20px;
+        background: var(--p);
+        border: none;
+        border-radius: 28px;
+        color: white;
+        cursor: pointer;
     }
     .music-player-container {
-        background: #0a0a0a;
+        background: rgba(0,0,0,0.3);
         border-radius: 20px;
-        overflow: hidden;
-        height: 550px;
-        flex-shrink: 0;
-        border: 1px solid var(--border);
+        padding: 20px;
     }
-    .music-player-container iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-    }
-    .music-note {
-        font-size: 12px;
-        color: var(--gray);
+    .music-placeholder {
         text-align: center;
-        padding: 10px 12px;
-        background: rgba(0,0,0,0.2);
+        padding: 40px;
+        color: var(--gray);
+    }
+    .music-placeholder i {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+    .music-song-card {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .music-thumb {
+        width: 100%;
+        max-height: 200px;
+        object-fit: cover;
         border-radius: 16px;
+    }
+    .music-song-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: white;
+    }
+    .music-song-artist {
+        font-size: 13px;
+        color: var(--gray);
+    }
+    .music-song-duration, .music-song-views {
+        font-size: 11px;
+        color: var(--gray);
+        margin-top: 4px;
+    }
+    .music-controls-panel {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+    .music-control-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: 600;
         display: flex;
         align-items: center;
-        justify-content: center;
         gap: 8px;
-        flex-shrink: 0;
     }
-    .music-note i {
-        color: var(--p-light);
-        font-size: 14px;
+    .music-control-btn.play {
+        background: var(--success);
+        color: white;
     }
-    @media (max-width: 768px) {
-        .music-modal-content {
-            width: 95%;
-            max-width: none;
-            max-height: 90vh;
-        }
-        .music-player-container {
-            height: 450px;
-        }
-        .music-tab {
-            padding: 10px 12px;
-            font-size: 12px;
-        }
-        .music-tab i { font-size: 14px; }
+    .music-control-btn.stop {
+        background: var(--danger);
+        color: white;
+    }
+    .music-volume-slider {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0,0,0,0.3);
+        padding: 5px 12px;
+        border-radius: 30px;
+    }
+    .music-volume-slider input {
+        width: 80px;
+    }
+    .music-results-list {
+        border-top: 1px solid var(--border);
+        padding-top: 15px;
+    }
+    .music-info-card {
+        background: rgba(0,0,0,0.2);
+        border-radius: 16px;
+        padding: 12px;
+    }
+    .music-info-title {
+        font-weight: 600;
+        color: white;
+        margin-bottom: 5px;
+    }
+    .music-info-artist {
+        font-size: 12px;
+        color: var(--gray);
+    }
+    .music-info-detail {
+        font-size: 10px;
+        color: var(--gray);
+        margin-top: 5px;
+    }
+    .music-youtube-link {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 6px 12px;
+        background: #ff0000;
+        color: white;
+        text-decoration: none;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+    .music-note {
+        font-size: 11px;
+        color: var(--gray);
+        text-align: center;
+        padding: 10px;
+        background: rgba(0,0,0,0.2);
+        border-radius: 12px;
+    }
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: var(--gray);
     }
     @media (max-width: 550px) {
-        .music-player-container {
-            height: 400px;
+        .music-modal-content {
+            width: 95%;
         }
-        .music-modal-body {
-            padding: 15px;
+        .music-controls-panel {
+            flex-direction: column;
         }
-        .music-tabs {
-            gap: 8px;
-        }
-        .music-tab {
-            padding: 8px 10px;
-            font-size: 11px;
+        .music-volume-slider {
+            width: 100%;
+            justify-content: center;
         }
     }
 `;
 document.head.appendChild(musicStyle);
 
+// ========== GLOBAL FUNCTIONS ==========
 window.showMusicSearchModal = showMusicSearchModal;
-window.switchMusicTab = switchMusicTab;
 window.addMusicButton = addMusicButton;
+window.playMusic = playMusic;
+window.pauseMusic = pauseMusic;
+window.resumeMusic = resumeMusic;
+window.stopMusic = stopMusic;
 
 // ========== EVENT LISTENERS ==========
 document.getElementById('login-btn').onclick = handleLogin;
@@ -1298,6 +1484,7 @@ document.getElementById('email-contact').onclick = (e) => { e.preventDefault(); 
 document.getElementById('instagram-contact').onclick = (e) => { e.preventDefault(); alert('📱 @rayy_official'); };
 document.getElementById('telegram-contact').onclick = (e) => { e.preventDefault(); alert('💬 @rayy'); };
 
+// ========== GLOBAL WINDOW FUNCTIONS ==========
 window.pinMessage = pinMessage;
 window.unpinMessage = unpinMessage;
 window.replyToMessage = replyToMessage;
@@ -1310,8 +1497,8 @@ window.openPrivateChat = openPrivateChat;
 window.filterUserList = filterUserList;
 window.closeWelcomeModal = closeWelcomeModal;
 window.showMusicSearchModal = showMusicSearchModal;
-window.switchMusicTab = switchMusicTab;
 
+// ========== POPUP STYLE ==========
 const stylePopup = document.createElement('style');
 stylePopup.textContent = `
     .user-list-popup {
@@ -1355,4 +1542,5 @@ stylePopup.textContent = `
 `;
 document.head.appendChild(stylePopup);
 
+// ========== CHECK AUTH ==========
 checkAuth();
