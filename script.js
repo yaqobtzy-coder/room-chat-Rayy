@@ -1,6 +1,6 @@
 // ========================================
 // FURAB V14 - FULL LOGIC - PART 1/5
-// Initialization, Auth, Encryption, Story
+// Initialization, Auth, Encryption, Story, Member List
 // ========================================
 
 const firebaseConfig = { databaseURL: "https://rayy-all-web-default-rtdb.asia-southeast1.firebasedatabase.app" };
@@ -20,7 +20,6 @@ let activeStatus = [];
 let statusIdx = 0;
 let statusTimer;
 
-// Encryption
 function encryptMessage(text, key) {
     let result = '';
     for (let i = 0; i < text.length; i++) {
@@ -613,7 +612,6 @@ function loadRoomMessages() {
             Object.keys(data).forEach(id => renderRoomMessage(data[id], id));
         }
         
-        // AUTO SCROLL FIX - scroll ke bawah jika sebelumnya di bawah atau ada pesan baru
         if (wasAtBottom || Date.now() - lastMessageTimestamp < 3000) {
             setTimeout(() => {
                 container.scrollTop = container.scrollHeight;
@@ -684,7 +682,7 @@ async function renderRoomMessage(data, messageId) {
     container.appendChild(messageDiv);
 }
 
-// REPLY FUNCTION
+// ========== REPLY FUNCTION ==========
 function replyToMessage(messageId, user, text) {
     replyTo = { messageId: messageId, user: user, text: text };
     const replyIndicator = document.getElementById('reply-indicator');
@@ -702,7 +700,7 @@ function cancelReply() {
     if (replyIndicator) replyIndicator.style.display = 'none';
 }
 
-// TAG USER POPUP
+// ========== TAG USER POPUP ==========
 function showUserList(filter) {
     let popup = document.getElementById('user-list-popup');
     if (!popup) {
@@ -883,12 +881,11 @@ async function sendAIMessage(e) {
     const thinkingDiv = document.createElement('div');
     thinkingDiv.className = 'ai-message bot';
     thinkingDiv.id = 'ai-thinking';
-    thinkingDiv.innerHTML = `<div class="ai-bubble"><i class="fas fa-spinner fa-spin"></i> Thinking...</div>`;
+    thinkingDiv.innerHTML = `<div class="ai-bubble"><i class="fas fa-spinner fa-spin"></i> Thinking...</div></div>`;
     container.appendChild(thinkingDiv);
     container.scrollTop = container.scrollHeight;
     
     try {
-        // Coba 3 API AI secara bergantian
         let answer = null;
         
         // 1. Coba FGsi Gemini
@@ -900,7 +897,7 @@ async function sendAIMessage(e) {
             }
         } catch(e) { console.log("FGsi error:", e); }
         
-        // 2. Jika gagal, coba API cadangan
+        // 2. Jika gagal, coba Botcahx
         if (!answer) {
             try {
                 const res = await fetch(`https://api.botcahx.eu.org/api/ai/gpt4?text=${encodeURIComponent(msg)}&apikey=alipabotcahx2026`);
@@ -909,7 +906,7 @@ async function sendAIMessage(e) {
             } catch(e) { console.log("Botcahx error:", e); }
         }
         
-        // 3. Jika masih gagal, gunakan respons default
+        // 3. Jika masih gagal
         if (!answer) {
             answer = "Maaf, AI sedang mengalami gangguan. Silakan coba lagi nanti.";
         }
@@ -952,7 +949,7 @@ function boot() {
     loadUpdatesToModal();
     loadPinnedMessage();
     loadStory();
-    addMusicButton(); // TAMBAHKAN TOMBOL MUSIK
+    addMusicButton(); // Tombol musik
     
     const roomInput = document.getElementById('room-chat-in');
     if (roomInput) {
@@ -1195,15 +1192,24 @@ async function getAudioFromVideo(videoUrl, songData) {
 }
 
 function addMusicButton() {
-    const headerRight = document.querySelector('.header-right');
-    if (headerRight && !document.getElementById('music-toggle-btn')) {
-        const musicBtn = document.createElement('button');
-        musicBtn.id = 'music-toggle-btn';
-        musicBtn.innerHTML = '<i class="fas fa-music"></i>';
-        musicBtn.title = 'Cari & Putar Lagu';
+    // Cari tombol musik yang sudah ada di HTML
+    const musicBtn = document.getElementById('music-toggle-btn');
+    if (musicBtn) {
         musicBtn.onclick = showMusicSearchModal;
-        headerRight.insertBefore(musicBtn, document.getElementById('menu-btn'));
+    } else {
+        // Backup: buat tombol jika tidak ada
+        const headerRight = document.querySelector('.header-right');
+        if (headerRight && !document.getElementById('music-toggle-btn')) {
+            const btn = document.createElement('button');
+            btn.id = 'music-toggle-btn';
+            btn.innerHTML = '<i class="fas fa-music"></i>';
+            btn.title = 'Cari & Putar Lagu';
+            btn.onclick = showMusicSearchModal;
+            headerRight.insertBefore(btn, document.getElementById('member-list-btn'));
+        }
     }
+    
+    // CSS untuk musik
     const style = document.createElement('style');
     style.textContent = `
         .music-player { position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 500px; background: var(--bg-header); border-radius: 20px; padding: 12px 16px; display: none; align-items: center; z-index: 10001; border: 1px solid var(--border); }
@@ -1283,6 +1289,10 @@ window.openPrivateChat = openPrivateChat;
 window.filterUserList = filterUserList;
 window.closeWelcomeModal = closeWelcomeModal;
 window.showMusicSearchModal = showMusicSearchModal;
+window.playMusic = playMusic;
+window.pauseMusic = pauseMusic;
+window.resumeMusic = resumeMusic;
+window.stopMusic = stopMusic;
 
 // CSS for popup
 const stylePopup = document.createElement('style');
