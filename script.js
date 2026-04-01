@@ -14,12 +14,14 @@ let replyTo = null;
 let currentTab = 'private';
 let unreadCount = 0;
 let unreadMessages = [];
+let unreadPrivateMessages = []; // Untuk private chat
 let pinnedMessage = null;
-let lastMessageTimestamp = 0;
 let activeStatus = [];
 let statusIdx = 0;
 let statusTimer;
+let notificationPermission = false;
 
+// ========== ENCRYPTION ==========
 function encryptMessage(text, key) {
     let result = '';
     for (let i = 0; i < text.length; i++) {
@@ -48,6 +50,73 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ========== NOTIFICATION PERMISSION ==========
+function requestNotificationPermission() {
+    if ('Notification' in window) {
+        Notification.requestPermission().then(perm => {
+            notificationPermission = (perm === 'granted');
+            if (notificationPermission) {
+                console.log("✅ Notifikasi diizinkan");
+            }
+        });
+    }
+}
+
+function showNotification(title, body) {
+    if (notificationPermission && document.hidden) {
+        new Notification(title, { body: body, icon: 'https://i.ibb.co.com/8L8C6d0/pfp.jpg' });
+    }
+    showInAppToast(title, body);
+}
+
+function showInAppToast(title, body) {
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            width: 90%;
+            max-width: 420px;
+            pointer-events: none;
+        `;
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        background: linear-gradient(135deg, #8e44ad, #a55eea);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 20px;
+        margin-bottom: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        border-left: 4px solid #f1c40f;
+        animation: slideInDown 0.3s ease;
+        pointer-events: auto;
+        cursor: pointer;
+    `;
+    toast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-bell"></i>
+            <div>
+                <div style="font-size: 11px; opacity: 0.8;">${title}</div>
+                <div>${body.substring(0, 60)}${body.length > 60 ? '...' : ''}</div>
+            </div>
+        </div>
+    `;
+    toast.onclick = () => toast.remove();
+    toastContainer.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+// ========== AUTH ==========
 function checkAuth() {
     currentUser = localStorage.getItem('furab_user');
     if (currentUser) {
@@ -130,6 +199,7 @@ function closeWelcomeModal() {
     document.getElementById('welcome-modal').style.display = 'none';
 }
 
+// ========== STORY ==========
 function loadStory() {
     db.ref('status_room').on('value', snap => {
         activeStatus = [];
@@ -196,6 +266,7 @@ function closeStory() {
     clearTimeout(statusTimer);
 }
 
+// ========== MEMBER LIST ==========
 function openMemberModal() {
     const container = document.getElementById('member-list-container');
     container.innerHTML = '<div class="loading">Loading members...</div>';
@@ -233,9 +304,10 @@ function closeMemberModal() {
 }
 // ========================================
 // FURAB V14 - FULL LOGIC - PART 2/6
-// Pin Message, Sidebar, Unread Messages
+// Pin Message, Sidebar, Unread Messages (Room & Private)
 // ========================================
 
+// ========== PIN MESSAGE ==========
 async function pinMessage(messageId, messageData, isRoom = true) {
     const pinData = {
         messageId: messageId,
@@ -306,6 +378,7 @@ function closePinnedModal() {
     document.getElementById('pinned-modal').style.display = 'none';
 }
 
+// ========== SIDEBAR ==========
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar-menu');
     if (sidebar) {
@@ -313,6 +386,7 @@ function toggleSidebar() {
     }
 }
 
+// ========== MODALS ==========
 function openInfoModal() {
     toggleSidebar();
     loadUpdatesToModal();
@@ -356,17 +430,23 @@ function loadUpdatesToModal() {
     });
 }
 
+// ========== UNREAD MESSAGES (ROOM CHAT) ==========
 function updateUnreadCount() {
     let totalUnread = 0;
     unreadMessages = [];
     
     allUsers.forEach(user => {
-        const unreadKey = `unread_${currentUser}_${user.name}`;
+        const unreadKey = `unread_room_${currentUser}_${user.name}`;
         const count = parseInt(localStorage.getItem(unreadKey) || '0');
         if (count > 0) {
             totalUnread += count;
             unreadMessages.push({ user: user.name, count: count });
         }
+    });
+    
+    // Tambahkan private chat unread
+    unreadPrivateMessages.forEach(pm => {
+        totalUnread += pm.count;
     });
     
     unreadCount = totalUnread;
@@ -391,38 +471,91 @@ function updateUnreadCount() {
     }
 }
 
-function markAsReadFromUser(username) {
-    const unreadKey = `unread_${currentUser}_${username}`;
+function markRoomAsRead(username) {
+    const unreadKey = `unread_room_${currentUser}_${username}`;
     localStorage.removeItem(unreadKey);
     updateUnreadCount();
 }
 
-function incrementUnreadCount(fromUser) {
+function incrementRoomUnread(fromUser) {
     if (fromUser === currentUser) return;
-    const unreadKey = `unread_${currentUser}_${fromUser}`;
+    const unreadKey = `unread_room_${currentUser}_${fromUser}`;
     let current = parseInt(localStorage.getItem(unreadKey) || '0');
     localStorage.setItem(unreadKey, current + 1);
     updateUnreadCount();
     renderUserList(allUsers);
 }
 
+// ========== UNREAD PRIVATE CHAT ==========
+function updatePrivateUnreadCount() {
+    unreadPrivateMessages = [];
+    let total = 0;
+    
+    allUsers.forEach(user => {
+        const unreadKey = `unread_private_${currentUser}_${user.name}`;
+        const count = parseInt(localStorage.getItem(unreadKey) || '0');
+        if (count > 0) {
+            unreadPrivateMessages.push({ user: user.name, count: count });
+            total += count;
+        }
+    });
+    
+    updateUnreadCount();
+    return total;
+}
+
+function markPrivateAsRead(username) {
+    const unreadKey = `unread_private_${currentUser}_${username}`;
+    localStorage.removeItem(unreadKey);
+    updatePrivateUnreadCount();
+}
+
+function incrementPrivateUnread(fromUser) {
+    if (fromUser === currentUser) return;
+    const unreadKey = `unread_private_${currentUser}_${fromUser}`;
+    let current = parseInt(localStorage.getItem(unreadKey) || '0');
+    localStorage.setItem(unreadKey, current + 1);
+    updatePrivateUnreadCount();
+    
+    // Notifikasi
+    showNotification(`📩 Pesan baru dari @${fromUser}`, "Klik untuk membalas");
+}
+
 function renderUnreadList() {
     const container = document.getElementById('unread-list-container');
     if (!container) return;
-    if (unreadMessages.length === 0) {
+    
+    const allUnread = [
+        ...unreadMessages.map(u => ({ ...u, type: 'room' })),
+        ...unreadPrivateMessages.map(u => ({ ...u, type: 'private' }))
+    ];
+    
+    if (allUnread.length === 0) {
         container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--gray);">Tidak ada pesan belum dibaca</div>';
         return;
     }
-    container.innerHTML = unreadMessages.map(u => `
-        <div class="user-item" onclick="openPrivateChat('${u.user}')">
+    
+    container.innerHTML = allUnread.map(u => `
+        <div class="user-item" onclick="openChatFromUnread('${u.user}', '${u.type}')">
             <div class="user-avatar">${u.user.charAt(0).toUpperCase()}</div>
             <div class="user-info">
                 <div class="user-name">@${u.user}</div>
-                <div class="user-status">${u.count} pesan belum dibaca</div>
+                <div class="user-status">${u.count} pesan belum dibaca • ${u.type === 'private' ? '🔒 Private Chat' : '💬 Room Chat'}</div>
             </div>
             <span class="unread-badge">${u.count}</span>
         </div>
     `).join('');
+}
+
+function openChatFromUnread(username, type) {
+    closeUnreadModal();
+    if (type === 'private') {
+        switchTab('private');
+        openPrivateChat(username);
+    } else {
+        switchTab('room');
+        // Scroll ke pesan user
+    }
 }
 
 function switchTab(tab) {
@@ -439,9 +572,10 @@ function switchTab(tab) {
 }
 // ========================================
 // FURAB V14 - FULL LOGIC - PART 3/6
-// Private Chat, Room Chat, Reply, Tag
+// Private Chat, Room Chat, Reply (Swipe + Click)
 // ========================================
 
+// ========== PRIVATE CHAT ==========
 function loadUserList() {
     db.ref('users').on('value', snap => {
         allUsers = [];
@@ -458,7 +592,7 @@ function loadUserList() {
             });
         }
         renderUserList(allUsers);
-        updateUnreadCount();
+        updatePrivateUnreadCount();
     });
 }
 
@@ -472,7 +606,7 @@ function renderUserList(users) {
     }
     
     container.innerHTML = users.map(u => {
-        const unreadKey = `unread_${currentUser}_${u.name}`;
+        const unreadKey = `unread_private_${currentUser}_${u.name}`;
         const unreadCountVal = parseInt(localStorage.getItem(unreadKey) || '0');
         const unreadBadge = unreadCountVal > 0 ? `<span class="unread-badge">${unreadCountVal}</span>` : '';
         
@@ -503,7 +637,7 @@ window.openPrivateChat = function(username) {
     console.log("Opening private chat with:", username);
     if (!username) return;
     currentPrivateChatWith = username;
-    markAsReadFromUser(username);
+    markPrivateAsRead(username);
     
     const userListContainer = document.getElementById('user-list-container');
     const privateChatScreen = document.getElementById('private-chat-screen');
@@ -590,24 +724,18 @@ async function sendPrivateMessage(e) {
     input.value = '';
 }
 
+// ========== ROOM CHAT ==========
 function loadRoomMessages() {
     db.ref('messages_room').limitToLast(50).on('value', snap => {
         const container = document.getElementById('room-chat-screen');
         if (!container) return;
-        const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
         
         container.innerHTML = '';
         const data = snap.val();
         if (data) {
             Object.keys(data).forEach(id => renderRoomMessage(data[id], id));
         }
-        
-        if (wasAtBottom || Date.now() - lastMessageTimestamp < 3000) {
-            setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
-            }, 100);
-        }
-        lastMessageTimestamp = Date.now();
+        // TIDAK ADA AUTO SCROLL - manual
     });
 }
 
@@ -672,6 +800,7 @@ async function renderRoomMessage(data, messageId) {
     container.appendChild(messageDiv);
 }
 
+// ========== REPLY FUNCTION (Swipe + Click) ==========
 function replyToMessage(messageId, user, text) {
     replyTo = { messageId: messageId, user: user, text: text };
     const replyIndicator = document.getElementById('reply-indicator');
@@ -689,6 +818,39 @@ function cancelReply() {
     if (replyIndicator) replyIndicator.style.display = 'none';
 }
 
+// ========== SWIPE GESTURE FOR REPLY ==========
+function setupSwipeReply(element, messageId, user, text) {
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const SWIPE_THRESHOLD = 50;
+    
+    element.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        element.classList.add('swiping-right');
+    });
+    
+    element.addEventListener('touchmove', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchEndX - touchStartX;
+        if (diff > 10) {
+            element.style.transform = `translateX(${Math.min(diff, 60)}px)`;
+        }
+    });
+    
+    element.addEventListener('touchend', (e) => {
+        const diff = touchEndX - touchStartX;
+        element.style.transform = '';
+        element.classList.remove('swiping-right');
+        
+        if (diff > SWIPE_THRESHOLD) {
+            replyToMessage(messageId, user, text);
+        }
+        touchStartX = 0;
+        touchEndX = 0;
+    });
+}
+
+// ========== TAG USER POPUP ==========
 function showUserList(filter) {
     let popup = document.getElementById('user-list-popup');
     if (!popup) {
@@ -741,56 +903,10 @@ function insertTag(tag) {
 }
 // ========================================
 // FURAB V14 - FULL LOGIC - PART 4/6
-// Notification, AI, Settings, Boot
+// Send Room Message, AI, Settings, Boot
 // ========================================
 
-function showInAppNotification(title, body) {
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.style.cssText = `
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 99999;
-            width: 90%;
-            max-width: 420px;
-            pointer-events: none;
-        `;
-        document.body.appendChild(toastContainer);
-    }
-    
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        background: linear-gradient(135deg, #8e44ad, #a55eea);
-        color: white;
-        padding: 12px 16px;
-        border-radius: 20px;
-        margin-bottom: 10px;
-        font-size: 12px;
-        font-weight: 600;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        border-left: 4px solid #f1c40f;
-        animation: slideInDown 0.3s ease;
-        pointer-events: auto;
-        cursor: pointer;
-    `;
-    toast.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-bell"></i>
-            <div>
-                <div style="font-size: 11px; opacity: 0.8;">${title}</div>
-                <div>${body.substring(0, 60)}${body.length > 60 ? '...' : ''}</div>
-            </div>
-        </div>
-    `;
-    toast.onclick = () => toast.remove();
-    toastContainer.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
-}
-
+// ========== SEND ROOM MESSAGE ==========
 async function sendRoomMessage(e) {
     e.preventDefault();
     const input = document.getElementById('room-chat-in');
@@ -810,22 +926,26 @@ async function sendRoomMessage(e) {
     const popup = document.getElementById('user-list-popup');
     if (popup) popup.style.display = 'none';
     
+    // Process @all mention
     if (msg.includes('@all')) {
         const mentions = allUsers.map(u => `@${u.name}`).join(' ');
         await db.ref('messages_room').push({ user: 'SYSTEM', text: `📢 MENTION ALL dari @${currentUser}: ${mentions}`, time: time, ts: Date.now() });
-        showInAppNotification('📢 MENTION ALL', `${currentUser} menyebut semua orang`);
+        showNotification('📢 MENTION ALL', `${currentUser} menyebut semua orang`);
     }
     
+    // Process @user mentions
     const mentionMatches = msg.match(/@(\w+)/g);
     if (mentionMatches) {
         mentionMatches.forEach(tag => {
             const username = tag.substring(1);
             if (username !== 'all' && allUsers.some(u => u.name === username)) {
-                showInAppNotification(`🔔 KAMU DISEBUT`, `@${currentUser} menyebutmu: ${msg.substring(0, 50)}`);
+                showNotification(`🔔 KAMU DISEBUT`, `@${currentUser} menyebutmu: ${msg.substring(0, 50)}`);
+                incrementRoomUnread(username);
             }
         });
     }
     
+    // Verified command
     if (msg.startsWith('/v ') && currentUser === 'rayy') {
         const target = msg.split(' ')[1];
         if (target) {
@@ -836,15 +956,9 @@ async function sendRoomMessage(e) {
     }
     
     await db.ref('messages_room').push(messageObj);
-    
-    const container = document.getElementById('room-chat-screen');
-    if (container) {
-        setTimeout(() => {
-            container.scrollTop = container.scrollHeight;
-        }, 100);
-    }
 }
 
+// ========== AI CHAT (FIX STUCK) ==========
 function toggleAIChat() {
     const modal = document.getElementById('ai-modal');
     if (modal) {
@@ -906,6 +1020,7 @@ async function sendAIMessage(e) {
     container.scrollTop = container.scrollHeight;
 }
 
+// ========== ROOM SETTINGS SYNC ==========
 db.ref('settings').on('value', snap => {
     const d = snap.val() || {};
     const roomNameEl = document.getElementById('room-name');
@@ -923,6 +1038,7 @@ db.ref('settings').on('value', snap => {
     if (roomInput) roomInput.disabled = isMuted;
 });
 
+// ========== BOOT ==========
 function boot() {
     console.log("Boot started, user:", currentUser);
     loadUserList();
@@ -931,6 +1047,7 @@ function boot() {
     loadPinnedMessage();
     loadStory();
     addMusicButton();
+    requestNotificationPermission();
     
     const roomInput = document.getElementById('room-chat-in');
     if (roomInput) {
@@ -968,6 +1085,15 @@ function boot() {
     if (searchInput) {
         searchInput.addEventListener('input', filterUserList);
     }
+    
+    // Setup swipe reply for existing messages
+    const messages = document.querySelectorAll('.message');
+    messages.forEach(msg => {
+        const replyBtn = msg.querySelector('.message-actions .fa-reply');
+        if (replyBtn) {
+            // Swipe already handled in render
+        }
+    });
 }
 // ========================================
 // FURAB V14 - FULL LOGIC - PART 5/6
@@ -1649,6 +1775,7 @@ window.openPrivateChat = openPrivateChat;
 window.filterUserList = filterUserList;
 window.closeWelcomeModal = closeWelcomeModal;
 window.showMusicSearchModal = showMusicSearchModal;
+window.openChatFromUnread = openChatFromUnread;
 
 // ========== POPUP STYLE ==========
 const stylePopup = document.createElement('style');
