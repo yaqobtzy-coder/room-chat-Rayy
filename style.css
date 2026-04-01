@@ -679,18 +679,25 @@ header {
     transform: scale(0.95);
 }
 
-/* ========== MESSAGE BUBBLE ========== */
+/* ========== MESSAGE BUBBLE (FIX) ========== */
 .message {
     display: flex;
     flex-direction: column;
-    max-width: 85%;
+    max-width: 80%;
     animation: fadeInUp 0.2s ease;
     position: relative;
+    margin-bottom: 8px;
 }
-.message-out { align-self: flex-end; }
-.message-in { align-self: flex-start; }
+.message-out {
+    align-self: flex-end;
+    margin-left: auto;
+}
+.message-in {
+    align-self: flex-start;
+    margin-right: auto;
+}
 .message-sender {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     color: var(--p-light);
     margin-bottom: 4px;
@@ -705,6 +712,7 @@ header {
     font-size: 14px;
     line-height: 1.4;
     word-wrap: break-word;
+    max-width: 100%;
 }
 .message-out .message-bubble {
     background: var(--message-out);
@@ -718,7 +726,7 @@ header {
     color: white;
 }
 .message-time {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--gray);
     margin-top: 4px;
     text-align: right;
@@ -728,13 +736,31 @@ header {
     margin-left: 6px;
     color: var(--gray);
 }
+
+/* ========== REPLY PREVIEW (FIX) ========== */
 .reply-preview {
+    background: rgba(255,255,255,0.1);
+    border-left: 3px solid var(--warning);
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    border-radius: 12px;
     font-size: 11px;
-    opacity: 0.7;
-    margin-bottom: 6px;
-    padding-left: 8px;
-    border-left: 2px solid var(--p);
 }
+.reply-preview .reply-user {
+    color: var(--warning);
+    font-weight: 700;
+    font-size: 10px;
+    margin-bottom: 2px;
+}
+.reply-preview .reply-text {
+    opacity: 0.8;
+    font-size: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ========== WELCOME THUMB ========== */
 .welcome-thumb-message {
     background: linear-gradient(135deg, var(--p), var(--p-light));
     border-radius: 16px;
@@ -750,7 +776,7 @@ header {
     border-radius: 8px;
 }
 
-/* ========== REPLY & PIN ACTIONS ========== */
+/* ========== MESSAGE ACTIONS (HOVER) ========== */
 .message-actions {
     position: absolute;
     top: 0;
@@ -761,6 +787,7 @@ header {
     padding: 4px 8px;
     border-radius: 20px;
     border: 1px solid var(--border);
+    z-index: 10;
 }
 .message:hover .message-actions {
     display: flex;
@@ -1316,3 +1343,23 @@ header {
 .mb-1 { margin-bottom: 5px; }
 .mb-2 { margin-bottom: 10px; }
 .mb-3 { margin-bottom: 15px; }
+
+/* ========== FIX UNREAD BADGE ========== */
+.unread-badge {
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
